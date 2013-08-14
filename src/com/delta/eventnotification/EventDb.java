@@ -127,4 +127,12 @@ public class EventDb {
 		ourDatabase.delete(DATABASE_TABLE, "_name='" + hMap + "'", null);
 
 	}
+
+	public Cursor getDetails(String eventName) {
+		// TODO Auto-generated method stub
+		String[] columns = new String[] { KEY_NAME, KEY_DATE, KEY_TIME,
+				KEY_VENUE };
+		Cursor m = ourDatabase.query(DATABASE_TABLE, columns, "_name='" + eventName + "'", null, null, null, null);
+		return m;
+	}
 }
