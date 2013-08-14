@@ -18,21 +18,46 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.app.Activity;
 import android.util.Log;
-import android.view.Menu;
+import android.view.ContextMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TabHost;
+import android.widget.Toast;
 import android.widget.TabHost.TabSpec;
+import android.widget.TextView;
 
 public class MainActivity extends Activity {
 	LoadData objects;
-
+	ListView eventList,notifList;
+	String[] name = {"Event1","Event2"};
+	String[] date = {"14.08.2013","15.08.2013"};
+	String[] time = {"5 PM", "6 pM"};
+	String[] venue = {"LHC", "Admin"};
+	String str;
+	EventDb event;
+	Integer[] icon = {R.drawable.ic_launcher,R.drawable.ic_launcher};
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		eventList=(ListView)findViewById(R.id.eventList);
+		notifList=(ListView)findViewById(R.id.notiList);
+		
 		TabHost th = (TabHost) findViewById(R.id.tabhost);
 		th.setup();
 		TabSpec specs = th.newTabSpec("tag1");
@@ -45,8 +70,127 @@ public class MainActivity extends Activity {
 		th.addTab(specs);
 		objects = new LoadData();
 		objects.execute("http://10.0.2.2:8080");
-	}
+		ArrayAdapter<String> adapter = new MyCustomAdapter(this, R.layout.row, name);
+	    eventList.setAdapter(adapter);
+	    ArrayAdapter<String> adapter1 = new MyCustomAdapter1(this, R.layout.rownoti, name);
+	    notifList.setAdapter(adapter1);
+	    registerForContextMenu(eventList);
+	    registerForContextMenu(notifList);
+	    notifList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {  
 
+  		  @Override
+		public boolean onItemLongClick(AdapterView<?> arg0, View arg1,
+				int arg2, long arg3) {
+			// TODO Auto-generated method stub
+  			 str= name[arg2];
+			return false;
+		
+  		  }
+  		  });  
+  	}
+
+	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+	      super.onCreateContextMenu(menu, v, menuInfo);
+	      if(v.getId()==R.id.eventList){
+	    	  MenuInflater inflater = getMenuInflater();
+		      inflater.inflate(R.menu.details, menu);
+	      }
+	      else if(v.getId()==R.id.notiList){
+	    	  MenuInflater inflater = getMenuInflater();
+		      inflater.inflate(R.menu.details1, menu);
+	      }
+	      
+	    }
+	public boolean onContextItemSelected(MenuItem item) {
+	      AdapterContextMenuInfo info = (AdapterContextMenuInfo) item.getMenuInfo();
+	      event=new EventDb(this);
+	      //String[] names = getResources().getStringArray(R.array.names);
+	      switch(item.getItemId()) {
+	      case R.id.createNot:
+	            Intent intent= new Intent(MainActivity.this,Notification.class);
+	            startActivity(intent);
+	            return true;
+	      case R.id.delete:
+	    	  Toast.makeText(MainActivity.this, str, Toast.LENGTH_SHORT).show();
+	    	  event.open();
+	    	  event.delete(str);
+	    	  event.close();
+	    	  return true;
+	      default:
+	            return super.onContextItemSelected(item);
+	      }
+	      }
+	
+	public class MyCustomAdapter extends ArrayAdapter<String> 
+    {
+        public MyCustomAdapter(Context context, int textViewResourceId, String[] objects) 
+        {
+            super(context, textViewResourceId, objects);
+        }
+ 
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            // Inflate the layout, mainlvitem.xml, in each row.
+            LayoutInflater inflater = MainActivity.this.getLayoutInflater();
+            View row1 = inflater.inflate(R.layout.row, parent, false);
+ 
+            // Declare and define the TextView, "item." This is where
+            // the name of each item will appear.
+            TextView item = (TextView)row1.findViewById(R.id.Name);
+            item.setText(name[position]);
+            
+            TextView item1 = (TextView)row1.findViewById(R.id.Date);
+            item1.setText(date[position]);
+            
+            TextView item2 = (TextView)row1.findViewById(R.id.Time);
+            item2.setText(time[position]);
+            
+            TextView item3 = (TextView)row1.findViewById(R.id.Venue);
+            item3.setText(venue[position]);
+ 
+            // Declare and define the TextView, "icon." This is where
+            // the icon in each row will appear.
+            ImageView iconview=(ImageView)row1.findViewById(R.id.icon);
+            iconview.setImageResource(icon[position]);
+ 
+            return row1;
+        }
+    }
+	
+	public class MyCustomAdapter1 extends ArrayAdapter<String> 
+    {
+        public MyCustomAdapter1(Context context, int textViewResourceId, String[] objects) 
+        {
+            super(context, textViewResourceId, objects);
+        }
+ 
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
+            // Inflate the layout, mainlvitem.xml, in each row.
+            LayoutInflater inflater = MainActivity.this.getLayoutInflater();
+            View row1 = inflater.inflate(R.layout.rownoti, parent, false);
+ 
+            // Declare and define the TextView, "item." This is where
+            // the name of each item will appear.
+            TextView item = (TextView)row1.findViewById(R.id.Name);
+            item.setText(name[position]);
+            
+            TextView item1 = (TextView)row1.findViewById(R.id.Date);
+            item1.setText(date[position]);
+            
+            TextView item3 = (TextView)row1.findViewById(R.id.Venue);
+            item3.setText(venue[position]);
+ 
+            // Declare and define the TextView, "icon." This is where
+            // the icon in each row will appear.
+            ImageView iconview=(ImageView)row1.findViewById(R.id.icon);
+            iconview.setImageResource(icon[position]);
+ 
+            return row1;
+        }
+    }
 	public class LoadData extends AsyncTask<String, Void, String> {
 
 		private static final String TAG_CONTACTS = "events";
@@ -149,3 +293,4 @@ public class MainActivity extends Activity {
 
 	}
 }
+

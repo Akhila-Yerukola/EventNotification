@@ -29,6 +29,7 @@ public class Notification extends Activity implements OnClickListener,
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.notification);
+		
 		data = new EventDb(this);
 		name = (TextView) findViewById(R.id.tvName);
 		venue = (TextView) findViewById(R.id.tvVenue);
@@ -64,6 +65,7 @@ public class Notification extends Activity implements OnClickListener,
 		// }
 		// }
 		name.setText(eName);
+		
 		venue.setText(eLoc);
 		dateNtime.setText(eDate + "  " + eTime);
 

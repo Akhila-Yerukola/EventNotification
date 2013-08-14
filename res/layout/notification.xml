@@ -22,8 +22,8 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/textView1"
         android:layout_below="@+id/textView1"
-        android:text="Large Text"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
         android:id="@+id/textView3"
@@ -40,11 +40,11 @@
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/textView3"
         android:layout_below="@+id/textView3"
-        android:text="Large Text"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
-        android:id="@+id/tvDnT"
+        android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/tvVenue"
@@ -53,13 +53,13 @@
         android:text="Date and Time :" />
 
     <TextView
-        android:id="@+id/textView6"
+        android:id="@+id/tvDnT"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignLeft="@+id/textView5"
-        android:layout_below="@+id/tvDnT"
-        android:text="Large Text"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:layout_below="@+id/textView5"
+        android:text="Medium Text"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <Spinner
         android:id="@+id/spinner1"
@@ -83,9 +83,7 @@
         android:layout_below="@+id/spinner1"
         android:layout_marginTop="48dp"
         android:layout_marginLeft="20dp"
-        
-        android:text="Save" 
-        android:textAlignment="center"/>
+        android:text="Save" />
 
     <Button
         android:id="@+id/bCancel"
