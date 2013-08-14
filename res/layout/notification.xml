@@ -82,8 +82,10 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/spinner1"
         android:layout_marginTop="48dp"
-        android:layout_toRightOf="@+id/textView3"
-        android:text="Save" />
+        android:layout_marginLeft="20dp"
+        
+        android:text="Save" 
+        android:textAlignment="center"/>
 
     <Button
         android:id="@+id/bCancel"
