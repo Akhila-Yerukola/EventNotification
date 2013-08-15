@@ -2,10 +2,7 @@ package com.delta.eventnotification;
 
 import android.os.Bundle;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
-import android.database.Cursor;
-import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;

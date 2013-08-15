@@ -76,6 +76,7 @@ public class MainActivity extends Activity {
 	    notifList.setAdapter(adapter1);
 	    registerForContextMenu(eventList);
 	    registerForContextMenu(notifList);
+	    
 	    notifList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {  
 
   		  @Override
