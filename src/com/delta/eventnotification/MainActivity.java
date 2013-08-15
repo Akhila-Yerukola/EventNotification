@@ -37,9 +37,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TabHost;
-import android.widget.Toast;
 import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	LoadData objects;
@@ -76,6 +76,7 @@ public class MainActivity extends Activity {
 	    notifList.setAdapter(adapter1);
 	    registerForContextMenu(eventList);
 	    registerForContextMenu(notifList);
+	    
 	    notifList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {  
 
   		  @Override
