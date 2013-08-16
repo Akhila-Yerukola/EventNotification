@@ -1,7 +1,13 @@
 package com.delta.eventnotification;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -21,7 +27,9 @@ public class Notification extends Activity implements OnClickListener,
 	String eName, eTime, eDate, eLoc, eDesc,timeToBeSet;
 	String[] choices = { "1 hour before", "2 hours before" };
 	Spinner spinner;
-
+	List events = new ArrayList();
+	int length,hr,min,date,month,year;
+	static int c=0;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -62,7 +70,11 @@ public class Notification extends Activity implements OnClickListener,
 		// }
 		// }
 		name.setText(eName);
-		
+		hr=Integer.parseInt(eTime.substring(0, 2));
+		min= Integer.parseInt(eTime.substring(3, 5));
+		date = Integer.parseInt(eDate.substring(0, 2));
+		month = Integer.parseInt(eDate.substring(3, 5));
+		year = Integer.parseInt(eDate.substring(6));
 		venue.setText(eLoc);
 		dateNtime.setText(eDate + "  " + eTime);
 
@@ -85,8 +97,24 @@ public class Notification extends Activity implements OnClickListener,
 						Toast.LENGTH_SHORT).show();
 			}
 			if (work == true) {
-				Toast.makeText(this, "Event Added!", Toast.LENGTH_SHORT).show();
-
+				
+				data.open();
+				events=data.getData();
+				data.close();
+				length=events.size();
+				
+				Intent myIntent = new Intent(Notification.this , NotiReceiver.class); 
+				myIntent.putExtra("position", length-1);
+				
+				AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+			       PendingIntent pendingIntent = PendingIntent.getBroadcast(Notification.this, c++, myIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
+			       Calendar calendar = Calendar.getInstance();
+			       calendar.set(Calendar.DAY_OF_MONTH,date);
+			       calendar.set(Calendar.MONTH, month);
+			       calendar.set(Calendar.YEAR, year);
+			       calendar.set(Calendar.HOUR_OF_DAY, hr);
+			       calendar.set(Calendar.MINUTE, min);
+			       Toast.makeText(this, "Event Added!", Toast.LENGTH_SHORT).show();
 			}
 
 			// Should add notification alarm setter here!

@@ -47,6 +47,11 @@
             android:name="com.delta.eventnotification.SplashNew"
             android:label="@string/title_activity_splash_new" >
         </activity>
+
+        <receiver 
+            android:name="com.delta.eventnotification.NotiReceiver" >
+        </receiver>
+"
     </application>
 
 </manifest>
