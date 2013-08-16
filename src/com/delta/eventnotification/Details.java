@@ -1,15 +1,42 @@
 package com.delta.eventnotification;
 
-import android.os.Bundle;
+import java.util.HashMap;
+import java.util.List;
+
 import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.Menu;
+import android.widget.TextView;
 
 public class Details extends Activity {
-
+int position;
+TextView name, date, location , desc , time;
+EventDb data;
+List<HashMap<String, String>> list;
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.details);
+		Intent getDetails = getIntent();
+		position = getDetails.getIntExtra("position", 0);
+		data = new EventDb(this);
+		data.open();
+		list = data.getData();
+		data.close();
+		name = (TextView)findViewById(R.id.tvName);
+		desc = (TextView)findViewById(R.id.tvDesc);
+		time = (TextView)findViewById(R.id.tvTime);
+		date = (TextView)findViewById(R.id.tvDate);
+		location = (TextView)findViewById(R.id.tvVenue);
+		name.setText(list.get(position).get("name"));
+		date.setText(list.get(position).get("date"));
+		time.setText(list.get(position).get("time"));
+		location.setText(list.get(position).get("venue"));
+		desc.setText(list.get(position).get("desc"));
+		
+		
+		
 	}
 
 	@Override

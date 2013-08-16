@@ -19,7 +19,7 @@ public class Notification extends Activity implements OnClickListener,
 	Button save, cancel;
 	EventDb data;
 	String eName, eTime, eDate, eLoc, eDesc,timeToBeSet;
-	String[] choices = { "30 minutes before", "1 hour before", "2 hours before" };
+	String[] choices = { "1 hour before", "2 hours before" };
 	Spinner spinner;
 
 	@Override
@@ -111,21 +111,19 @@ public class Notification extends Activity implements OnClickListener,
 		int s = spinner.getSelectedItemPosition();
 		switch (s) {
 		case 0:
-			timeToBeSet = "30";
-			break;
-		case 1:
 			timeToBeSet = "1";
 			break;
-		case 2:
+		case 1:
 			timeToBeSet = "2";
 			break;
+		
 		}
 	}
 
 	@Override
 	public void onNothingSelected(AdapterView<?> arg0) {
 		// TODO Auto-generated method stub
-		timeToBeSet = "30";
+		timeToBeSet = "1";
 
 	}
 

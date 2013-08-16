@@ -109,11 +109,11 @@ public class EventDb {
 			// result = result + c.getString(iEvent) + " " + c.getString(iDate)
 			// + " " + c.getString(iTime) + " " + c.getString(iP) + "\n" ;
 			HashMap temp = new HashMap();
-			temp.put("Name", c.getString(iEvent).toUpperCase());
-			temp.put("Date", c.getString(iDate));
-			temp.put("Time", c.getString(iTime));
-			temp.put("Desc", c.getString(iDesc));
-			temp.put("Venue", c.getString(iVenue));
+			temp.put("name", c.getString(iEvent).toUpperCase());
+			temp.put("date", c.getString(iDate));
+			temp.put("time", c.getString(iTime));
+			temp.put("desc", c.getString(iDesc));
+			temp.put("venue", c.getString(iVenue));
 
 			docList.add(temp);
 
