@@ -2,25 +2,23 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
-    
-<ImageView
+
+    <ImageView
         android:id="@+id/icon1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentTop="true"
-        android:layout_marginLeft="22dp"
-        android:layout_marginTop="28dp"
+        android:layout_marginLeft="23dp"
+        android:layout_marginTop="24dp"
         android:src="@drawable/ic_launcher" />
- 
 
     <TextView
         android:id="@+id/Name1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/Date"
-        android:layout_marginLeft="64dp"
-        android:layout_toRightOf="@+id/icon"
+        android:layout_alignRight="@+id/Venue1"
+        android:layout_alignTop="@+id/icon1"
         android:text="Name"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
@@ -28,8 +26,8 @@
         android:id="@+id/Venue1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/icon"
-        android:layout_alignLeft="@+id/Name"
+        android:layout_alignLeft="@+id/Date1"
+        android:layout_below="@+id/icon1"
         android:text="Venue"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -37,8 +35,10 @@
         android:id="@+id/Date1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/Venue"
-        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/Name1"
+        android:layout_marginLeft="14dp"
+        android:layout_toRightOf="@+id/icon1"
         android:text="Date"
         android:textAppearance="?android:attr/textAppearanceSmall" />
+
 </RelativeLayout>

@@ -51,7 +51,7 @@
         <receiver 
             android:name="com.delta.eventnotification.NotiReceiver" >
         </receiver>
-"
+
     </application>
 
 </manifest>

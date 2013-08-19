@@ -8,23 +8,27 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NotificationCompat;
+import android.util.Log;
 
 public class NotiReceiver extends BroadcastReceiver {
 	static int c = 0;
 	int pos;
-	EventDb data;
+
 	List<HashMap<String, String>> events;
+	String eName, eTime, eDate, eLoc, eDesc;
 
 	@Override
-	public void onReceive(Context context, Intent arg1) {
+	public void onReceive(Context context, Intent event) {
 		// TODO Auto-generated method stub
-		data.open();
-		events = data.getData();
-		data.close();
-		pos = arg1.getIntExtra("position", 0);
+
+		Log.e("reached", "msg");
+		eName = event.getStringExtra("name");
+
+		eLoc = event.getStringExtra("venue");
+
 		NotificationCompat.Builder noti = new NotificationCompat.Builder(
-				context).setContentTitle(events.get(pos).get("name"))
-				.setContentText("Venue : " + events.get(pos).get("venue"))
+				context).setContentTitle(eName)
+				.setContentText("Venue : " + eLoc)
 				.setSmallIcon(R.drawable.ic_launcher);
 
 		NotificationManager notificationManager = (NotificationManager) context

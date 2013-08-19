@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
-import android.os.Bundle;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.AdapterView;
@@ -21,20 +22,22 @@ import android.widget.Toast;
 
 public class Notification extends Activity implements OnClickListener,
 		OnItemSelectedListener {
+
 	TextView name, venue, dateNtime;
 	Button save, cancel;
 	EventDb data;
-	String eName, eTime, eDate, eLoc, eDesc,timeToBeSet;
+	String eName, eTime, eDate, eLoc, eDesc, timeToBeSet;
 	String[] choices = { "1 hour before", "2 hours before" };
 	Spinner spinner;
 	List events = new ArrayList();
-	int length,hr,min,date,month,year;
-	static int c=0;
+	int length, hr, min, date, month, year;
+	static int c = 0;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.notification);
-		
+
 		data = new EventDb(this);
 		name = (TextView) findViewById(R.id.tvName);
 		venue = (TextView) findViewById(R.id.tvVenue);
@@ -70,11 +73,12 @@ public class Notification extends Activity implements OnClickListener,
 		// }
 		// }
 		name.setText(eName);
-		hr=Integer.parseInt(eTime.substring(0, 2));
-		min= Integer.parseInt(eTime.substring(3, 5));
+		hr = Integer.parseInt(eTime.substring(0, 2));
+		min = Integer.parseInt(eTime.substring(3, 5));
 		date = Integer.parseInt(eDate.substring(0, 2));
 		month = Integer.parseInt(eDate.substring(3, 5));
 		year = Integer.parseInt(eDate.substring(6));
+
 		venue.setText(eLoc);
 		dateNtime.setText(eDate + "  " + eTime);
 
@@ -97,24 +101,38 @@ public class Notification extends Activity implements OnClickListener,
 						Toast.LENGTH_SHORT).show();
 			}
 			if (work == true) {
-				
+
 				data.open();
-				events=data.getData();
+				events = data.getData();
 				data.close();
-				length=events.size();
-				
-				Intent myIntent = new Intent(Notification.this , NotiReceiver.class); 
-				myIntent.putExtra("position", length-1);
-				
-				AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
-			       PendingIntent pendingIntent = PendingIntent.getBroadcast(Notification.this, c++, myIntent, Intent.FLAG_ACTIVITY_NEW_TASK);
-			       Calendar calendar = Calendar.getInstance();
-			       calendar.set(Calendar.DAY_OF_MONTH,date);
-			       calendar.set(Calendar.MONTH, month);
-			       calendar.set(Calendar.YEAR, year);
-			       calendar.set(Calendar.HOUR_OF_DAY, hr);
-			       calendar.set(Calendar.MINUTE, min);
-			       Toast.makeText(this, "Event Added!", Toast.LENGTH_SHORT).show();
+				length = events.size();
+
+				Intent intent = new Intent(Notification.this,
+						NotiReceiver.class);
+				intent.putExtra("name", eName);
+				intent.putExtra("venue", eLoc);
+
+				AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+				PendingIntent pendingIntent = PendingIntent.getBroadcast(
+						Notification.this, c++, intent,
+						Intent.FLAG_ACTIVITY_NEW_TASK);
+				Log.e("hour",
+						Integer.toString(hr - Integer.parseInt(timeToBeSet)));
+				Log.e("min", Integer.toString(min));
+				Log.e("date", Integer.toString(date));
+				Log.e("month", Integer.toString(month));
+				Log.e("year", Integer.toString(year));
+				Calendar calendar = Calendar.getInstance();
+				calendar.set(Calendar.DAY_OF_MONTH, date);
+				calendar.set(Calendar.MONTH, month-1);
+				calendar.set(Calendar.YEAR, 2013);
+				//calendar.set(Calendar.HOUR_OF_DAY, 11);
+				 calendar.set(Calendar.HOUR_OF_DAY,
+				 hr-Integer.parseInt(timeToBeSet));
+				calendar.set(Calendar.MINUTE, min);
+				alarmManager.set(AlarmManager.RTC_WAKEUP,
+						calendar.getTimeInMillis(), pendingIntent);
+				Toast.makeText(this, "Event Added!", Toast.LENGTH_SHORT).show();
 			}
 
 			// Should add notification alarm setter here!
@@ -144,7 +162,7 @@ public class Notification extends Activity implements OnClickListener,
 		case 1:
 			timeToBeSet = "2";
 			break;
-		
+
 		}
 	}
 

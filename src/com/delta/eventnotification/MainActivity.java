@@ -51,12 +51,12 @@ public class MainActivity extends Activity {
 	List<HashMap<String, String>> listOfEvents;
 
 	ListView eventList, notifList;
-	static String[] flag={"false","false"};
-	String[] desc = { "blah blah ", " bleah" };
-	String[] name = { "Event1", "Event2" };
-	String[] date = { "16.08.2013", "16.08.2013" };
-	String[] time = { "21:08", "07:56" };
-	String[] venue = { "LHC", "Admin" };
+	static String[] flag  = { "false", "false" ,"false" , "false"};
+	String[] desc = { "blah blah ", " bleah" ,"third" , "fourth"};
+	String[] name = { "Event1", "Event2" ,"Event3", "Event4"};
+	String[] date = { "17.08.2013", "17.08.2013" , "17.08.2013", "17.08.2013"};
+	String[] time = { "11:40", "11:42", "11:46", "11:44" };
+	String[] venue = { "LHC", "Admin","LHC", "Admin" };
 	String[] edesc = new String[50];
 	String[] ename = new String[50];
 	String[] edate = new String[50];
@@ -103,7 +103,7 @@ public class MainActivity extends Activity {
 		objects = new LoadData();
 		objects.execute("http://10.0.2.2:8080");
 		ArrayAdapter<String> adapter = new MyCustomAdapter(this,
-				R.layout.rownoti, name);
+				R.layout.row, name);
 		eventList.setAdapter(adapter);
 		
 			ArrayAdapter<String> adapter1 = new MyCustomAdapter1(this,
@@ -120,9 +120,15 @@ public class MainActivity extends Activity {
 			public void onItemClick(AdapterView<?> arg0, View arg1,
 					int position, long arg3) {
 				// TODO Auto-generated method stub
-				Intent details = new Intent(MainActivity.this, Details.class);
-				details.putExtra("position", position);
-				startActivity(details);
+				Intent intent = new Intent(MainActivity.this, Details.class);
+				//details.putExtra("position", position);
+				intent.putExtra("name", name[position]);
+				intent.putExtra("desc", desc[position]);
+				intent.putExtra("venue", venue[position]);
+				intent.putExtra("date", date[position]);
+				intent.putExtra("time", time[position]);
+				Log.e("clicked position", Integer.toString(position));
+				startActivity(intent);
 
 			}
 		});
@@ -251,32 +257,44 @@ public class MainActivity extends Activity {
 	}
 
 	public class MyCustomAdapter1 extends ArrayAdapter<String> {
+		public int cnt =0;
 		public MyCustomAdapter1(Context context, int textViewResourceId,
 				String[] name) {
 			super(context, textViewResourceId, name);
+			Log.d("ADAPT", "Constructing");
+			
 		}
 
 		@Override
 		public View getView(int position, View convertView, ViewGroup parent) {
 			// Inflate the layout, mainlvitem.xml, in each row.
 			LayoutInflater inflater = MainActivity.this.getLayoutInflater();
-			View row1 = inflater.inflate(R.layout.rownoti, parent, false);
+			View row1 = inflater.inflate(R.layout.row, parent, false);
+			Log.d("ADAPT", Integer.toString(cnt++));
 
 			// Declare and define the TextView, "item." This is where
 			// the name of each item will appear.
-			TextView item = (TextView) row1.findViewById(R.id.Name1);
+			TextView item = (TextView) row1.findViewById(R.id.Name);
 			item.setText(ename[position]);
 
-			TextView item1 = (TextView) row1.findViewById(R.id.Date1);
+			TextView item1 = (TextView) row1.findViewById(R.id.Date);
 			item1.setText(edate[position]);
+			
+			TextView item2 = (TextView) row1.findViewById(R.id.Time);
+			item2.setText(etime[position]);
 
-			TextView item3 = (TextView) row1.findViewById(R.id.Venue1);
+			TextView item3 = (TextView) row1.findViewById(R.id.Venue);
 			item3.setText(evenue[position]);
 
-			ImageView iconview = (ImageView) row1.findViewById(R.id.icon1);
+			ImageView iconview = (ImageView) row1.findViewById(R.id.icon);
 			iconview.setImageResource(icon[position]);
-			Log.e("count","times");
+			//Log.e("count",Integer.toString(position));
 			return row1;
+		}
+		@Override
+		public int getCount() {
+			// TODO Auto-generated method stub
+			return listOfEvents.size();
 		}
 	}
 
@@ -308,8 +326,8 @@ public class MainActivity extends Activity {
 			// Declare and define the TextView, "icon." This is where
 			// the icon in each row will appear.
 			ImageView iconview = (ImageView) row1.findViewById(R.id.icon);
-			iconview.setImageResource(icon[position]);
-			Log.e("count11","times11");
+	//		iconview.setImageResource(icon[position]);
+			//Log.e("count11",Integer.toString(position));
 			return row1;
 			
 		}
