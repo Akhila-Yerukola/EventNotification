@@ -186,10 +186,10 @@ containing a value of this type.
     public static final class id {
         public static final int Date=0x7f05001d;
         public static final int Date1=0x7f050023;
-        public static final int Name=0x7f05001e;
+        public static final int Name=0x7f05001c;
         public static final int Name1=0x7f050021;
-        public static final int Time=0x7f05001c;
-        public static final int Venue=0x7f05001f;
+        public static final int Time=0x7f05001f;
+        public static final int Venue=0x7f05001e;
         public static final int Venue1=0x7f050022;
         public static final int action_settings=0x7f050026;
         public static final int bCancel=0x7f05001a;

@@ -6,11 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -41,55 +38,72 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.nostra13.universalimageloader.core.DisplayImageOptions;
+import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+
 public class MainActivity extends Activity {
 	LoadData objects;
+	ImageLoader imageLoader;
 	List<HashMap<String, String>> listOfEvents;
-
+	DisplayImageOptions options;
 	ListView eventList, notifList;
-	static String[] flag  = { "false", "false" ,"false" , "false"};
-	String[] desc = { "blah blah ", " bleah" ,"third" , "fourth"};
-	String[] name = { "Event1", "Event2" ,"Event3", "Event4"};
-	String[] date = { "17.08.2013", "17.08.2013" , "17.08.2013", "17.08.2013"};
-	String[] time = { "11:40", "11:42", "11:46", "11:44" };
-	String[] venue = { "LHC", "Admin","LHC", "Admin" };
+	Double[] lat= new Double[100];
+	Double[] lng= new Double[100];
+	Integer[] eid= new Integer[100];
+	Integer[] uid= new Integer[100];
+	static String[] flag = new String[100];
+	String[] desc = new String[100];
+	String[] name = new String[100];
+	String[] date = new String[100];
+	String[] pic = new String[100];
+	String[] time = new String[100];
+	String[] venue = new String[100];
 	String[] edesc = new String[50];
 	String[] ename = new String[50];
 	String[] edate = new String[50];
 	String[] etime = new String[50];
 	String[] evenue = new String[50];
 	String str,check;
-	int position1, length, l;
+	int position1, length=0, l;
 
 	EventDb event;
 	Integer[] icon = { R.drawable.ic_launcher, R.drawable.ic_launcher,
 			R.drawable.ic_launcher, R.drawable.ic_launcher,R.drawable.ic_launcher
 			 };
 
+	static class ViewHolder{
+		ImageView icon;
+		TextView nametext;
+		TextView datetext;
+		TextView timetext;
+		TextView venuetext;
+		
+	}
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		event = new EventDb(this);
-		listOfEvents = new ArrayList<HashMap<String, String>>();
-		event.open();
-		listOfEvents = event.getData();
-		Log.e("length", Integer.toString(listOfEvents.size()));
-		event.close();
-		for (int i = 0; i < listOfEvents.size(); i++) {
-			edesc[i] = listOfEvents.get(i).get("desc");
-			ename[i] = listOfEvents.get(i).get("name");
-			etime[i] = listOfEvents.get(i).get("time");
-			edate[i] = listOfEvents.get(i).get("date");
-			evenue[i] = listOfEvents.get(i).get("venue");
-		}
-		eventList = (ListView) findViewById(R.id.eventList);
-		notifList = (ListView) findViewById(R.id.notiList);
-
+		objects = new LoadData();
+		//http://10.0.2.2:8080
+		objects.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634");
+		
+		
+		options = new DisplayImageOptions.Builder()
+		.showImageForEmptyUri(R.drawable.common_signin_btn_icon_light)
+		.showImageOnFail(R.drawable.common_signin_btn_text_normal_light)
+		.cacheInMemory(true)
+		.cacheOnDisc(true)
+		.displayer(new RoundedBitmapDisplayer(20))
+		.build();
+		
+		
 		TabHost th = (TabHost) findViewById(R.id.tabhost);
 		th.setup();
 		TabSpec specs = th.newTabSpec("tag1");
@@ -100,16 +114,30 @@ public class MainActivity extends Activity {
 		specs.setContent(R.id.tab2);
 		specs.setIndicator("Notifications");
 		th.addTab(specs);
-		objects = new LoadData();
-		objects.execute("http://10.0.2.2:8080");
-		ArrayAdapter<String> adapter = new MyCustomAdapter(this,
-				R.layout.row, name);
-		eventList.setAdapter(adapter);
+		event = new EventDb(MainActivity.this);
+		listOfEvents = new ArrayList<HashMap<String, String>>();
+		event.open();
+		listOfEvents = event.getData();
+		Log.e("length of notifications", Integer.toString(listOfEvents.size()));
+		event.close();
+		for (int i = 0; i < listOfEvents.size(); i++) {
+			edesc[i] = listOfEvents.get(i).get("desc");
+			ename[i] = listOfEvents.get(i).get("name");
+			etime[i] = listOfEvents.get(i).get("time");
+			edate[i] = listOfEvents.get(i).get("date");
+			evenue[i] = listOfEvents.get(i).get("venue");
+		}
+		eventList = (ListView) findViewById(R.id.eventList);
+		notifList = (ListView) findViewById(R.id.notiList);
 		
-			ArrayAdapter<String> adapter1 = new MyCustomAdapter1(this,
-					R.layout.row, ename);
-			notifList.setAdapter(adapter1);
-			Log.e("hema", "akhila");
+//		ArrayAdapter<String> adapter = new MyCustomAdapter(MainActivity.this,
+//				R.layout.row, name);
+//		eventList.setAdapter(adapter);
+//		
+//			ArrayAdapter<String> adapter1 = new MyCustomAdapter1(MainActivity.this,
+//					R.layout.row, ename);
+//			notifList.setAdapter(adapter1);
+//			Log.e("hema", "akhila");
 		
 		registerForContextMenu(eventList);
 		registerForContextMenu(notifList);
@@ -214,8 +242,8 @@ public class MainActivity extends Activity {
 			return true;
 		case R.id.delete:
 			Toast.makeText(MainActivity.this, str, Toast.LENGTH_SHORT).show();
-			AlertDialog.Builder alertBox = new AlertDialog.Builder(this);
-			alertBox.setMessage("Are you rearly want to delete");
+			AlertDialog.Builder alertBox = new AlertDialog.Builder(MainActivity.this);
+			alertBox.setMessage("Do you really want to delete?");
 
 			alertBox.setPositiveButton("Delete",
 					new DialogInterface.OnClickListener() {
@@ -274,20 +302,27 @@ public class MainActivity extends Activity {
 
 			// Declare and define the TextView, "item." This is where
 			// the name of each item will appear.
-			TextView item = (TextView) row1.findViewById(R.id.Name);
-			item.setText(ename[position]);
+//			TextView item = (TextView) row1.findViewById(R.id.Name);
+//			item.setText(ename[position]);
+//
+//			TextView item1 = (TextView) row1.findViewById(R.id.Date);
+//			item1.setText(edate[position]);
+//			
+//			TextView item2 = (TextView) row1.findViewById(R.id.Time);
+//			item2.setText(etime[position]);
+//
+//			TextView item3 = (TextView) row1.findViewById(R.id.Venue);
+//			item3.setText(evenue[position]);
 
-			TextView item1 = (TextView) row1.findViewById(R.id.Date);
-			item1.setText(edate[position]);
-			
-			TextView item2 = (TextView) row1.findViewById(R.id.Time);
-			item2.setText(etime[position]);
-
-			TextView item3 = (TextView) row1.findViewById(R.id.Venue);
-			item3.setText(evenue[position]);
-
-			ImageView iconview = (ImageView) row1.findViewById(R.id.icon);
-			iconview.setImageResource(icon[position]);
+//			ImageView iconview = (ImageView) row1.findViewById(R.id.icon);
+			//iconview.setImageResource(icon[position]);
+			ViewHolder holder = new ViewHolder();
+			holder.icon = (ImageView) convertView.findViewById(R.id.icon);
+			holder.nametext = (TextView) convertView.findViewById(R.id.Name);
+			holder.datetext = (TextView) convertView.findViewById(R.id.Date);
+			holder.timetext = (TextView) convertView.findViewById(R.id.Time);
+			convertView.setTag(holder);
+			imageLoader.displayImage(pic[position], holder.icon, options);
 			//Log.e("count",Integer.toString(position));
 			return row1;
 		}
@@ -312,36 +347,59 @@ public class MainActivity extends Activity {
 
 			// Declare and define the TextView, "item." This is where
 			// the name of each item will appear.
-			TextView item = (TextView) row1.findViewById(R.id.Name);
-			item.setText(name[position]);
-
-			TextView item1 = (TextView) row1.findViewById(R.id.Date);
-			item1.setText(date[position]);
-			TextView item2 = (TextView) row1.findViewById(R.id.Time);
-			item2.setText(time[position]);
-
-			TextView item3 = (TextView) row1.findViewById(R.id.Venue);
-			item3.setText(venue[position]);
+//			TextView item = (TextView) row1.findViewById(R.id.Name);
+//			Log.e("name in adapter", name[position]);
+//			item.setText(name[position]);
+//
+//			TextView item1 = (TextView) row1.findViewById(R.id.Date);
+//			item1.setText(date[position]);
+//			TextView item2 = (TextView) row1.findViewById(R.id.Time);
+//			item2.setText(time[position]);
+//
+//			TextView item3 = (TextView) row1.findViewById(R.id.Venue);
+			//item3.setText(venue[position]);
 
 			// Declare and define the TextView, "icon." This is where
 			// the icon in each row will appear.
-			ImageView iconview = (ImageView) row1.findViewById(R.id.icon);
+			//ImageView iconview = (ImageView) row1.findViewById(R.id.icon);
+			ViewHolder holder = new ViewHolder();
+			holder.icon = (ImageView) convertView.findViewById(R.id.icon);
+			holder.nametext = (TextView) convertView.findViewById(R.id.Name);
+			holder.datetext = (TextView) convertView.findViewById(R.id.Date);
+			holder.timetext = (TextView) convertView.findViewById(R.id.Time);
+			convertView.setTag(holder);
+			imageLoader.displayImage(pic[position], holder.icon, options);
+			
 	//		iconview.setImageResource(icon[position]);
 			//Log.e("count11",Integer.toString(position));
 			return row1;
 			
 		}
+		@Override
+		public int getCount() {
+			// TODO Auto-generated method stub
+			return length;
+		}
 	}
+		
+
+	
+
 
 	public class LoadData extends AsyncTask<String, Void, String> {
 
-		private static final String TAG_CONTACTS = "events";
+		private static final String TAG_CONTACTS = "data";
 		List docList = new ArrayList();
-		private static final String TAG_NAME = "Name";
-		private static final String TAG_DATE = "date";
-		private static final String TAG_TIME = "time";
-		private static final String TAG_DESC = "desc";
-		private static final String TAG_VENUE = "venue";
+		private static final String TAG_NAME = "ename";
+		private static final String TAG_DATE = "edate";
+		private static final String TAG_TIME = "etime";
+		private static final String TAG_DESC = "edesc";
+		private static final String TAG_VENUE = "evenue";
+		private static final String TAG_LAT = "lat";
+		private static final String TAG_PIC = "pic";
+		private static final String TAG_LNG = "lng";
+		private static final String TAG_EID = "eid";
+		private static final String TAG_UID = "uid";
 		JSONArray contacts = null;
 
 		InputStream is = null;
@@ -404,33 +462,51 @@ public class MainActivity extends Activity {
 				System.out.println("post-execute");
 				jObj = new JSONObject(json);
 
-				contacts = jObj.getJSONArray("contacts");
-
-				for (int i = 0; i < contacts.length(); i++) {
+				contacts = jObj.getJSONArray("data");
+				int i;
+				for (i = 0; i < contacts.length(); i++) {
 					JSONObject obj = contacts.getJSONObject(i);
-					String name = obj.getString(TAG_NAME);
-					String date = obj.getString(TAG_DATE);
-					String time = obj.getString(TAG_TIME);
-					String desc = obj.getString(TAG_DESC);
-					String venue = obj.getString(TAG_VENUE);
-
-					HashMap temp = new HashMap();
-					temp.put("name", name);
-					temp.put("date", date);
-					temp.put("time", time);
-					temp.put("desc", desc);
-					temp.put("venue", venue);
-
-					docList.add(temp);
-
-				}
+					String ename = obj.getString(TAG_NAME);
+					String edate = obj.getString(TAG_DATE);
+					String etime = obj.getString(TAG_TIME);
+					String edesc = obj.getString(TAG_DESC);
+					String evenue = obj.getString(TAG_VENUE);
+					String epic = obj.getString(TAG_PIC);
+					Integer eeid = obj.getInt(TAG_EID);
+					Integer euid = obj.getInt(TAG_UID);
+					Double elat= obj.getDouble(TAG_LAT);
+					Double elng= obj.getDouble(TAG_LNG);
+					name[i]=ename;
+					date[i]=edate;
+					time[i]=etime;
+					desc[i]=edesc;
+					flag[i]="false";
+					venue[i]=evenue;
+					eid[i]=eeid;
+					uid[i]=euid;
+					lat[i]=elat;
+					lng[i]=elng;
+					pic[i]=epic;
+				
+					
+					Log.e("name",name[i]);
+			}
+				length=i;
+				Log.e("length of event list", Integer.toString(length));
 			} catch (JSONException e) {
 				Log.e("JSON Parser", "Error parsing data " + e.toString());
 			}
 
-			// LoadData obj = new LoadData();
-			// obj.execute("http://10.0.2.2:8080");
+			ArrayAdapter<String> adapter = new MyCustomAdapter(MainActivity.this,
+					R.layout.row, name);
+			eventList.setAdapter(adapter);
+			
+				ArrayAdapter<String> adapter1 = new MyCustomAdapter1(MainActivity.this,
+						R.layout.row, ename);
+				notifList.setAdapter(adapter1);
+				Log.e("hema", "akhila");
 
+			
 		}
 
 	}
