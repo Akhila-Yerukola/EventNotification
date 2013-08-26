@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
@@ -38,7 +39,6 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
@@ -96,8 +96,8 @@ public class MainActivity extends Activity {
 		
 		
 		options = new DisplayImageOptions.Builder()
-		.showImageForEmptyUri(R.drawable.common_signin_btn_icon_light)
-		.showImageOnFail(R.drawable.common_signin_btn_text_normal_light)
+		.showImageForEmptyUri(R.drawable.logo)
+		.showImageOnFail(R.drawable.ic_launcher)
 		.cacheInMemory(true)
 		.cacheOnDisc(true)
 		.displayer(new RoundedBitmapDisplayer(20))
@@ -218,11 +218,26 @@ public class MainActivity extends Activity {
 	public boolean onContextItemSelected(MenuItem item) {
 		AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
 				.getMenuInfo();
+		Calendar current = Calendar.getInstance();
+		int yr = current.get(Calendar.YEAR);
+		int mon = current.get(Calendar.MONTH);
+		int day = current.get(Calendar.DAY_OF_MONTH);
+		int date1 = Integer.parseInt(date[position1].substring(0, 2));
+		int month1 = Integer.parseInt(date[position1].substring(3, 5));
+		int year1 = Integer.parseInt(date[position1].substring(6));
 
 		// String[] names = getResources().getStringArray(R.array.names);
 		switch (item.getItemId()) {
 		case R.id.createNot:
-			if(flag[position1]=="false"){
+		   if (yr <= year1)
+				if (mon <= month1) {
+					if (day <= date1) {}
+					else 
+						Toast.makeText(this, "Date already passed!",
+								Toast.LENGTH_SHORT).show();
+				}
+			
+			else if(flag[position1]=="false"){
 				flag[position1]="true";
 				Intent intent = new Intent(MainActivity.this, Notification.class);
 				intent.putExtra("name", name[position1]);
@@ -234,6 +249,8 @@ public class MainActivity extends Activity {
 				startActivity(intent);
 				
 			}
+			
+			
 			else{
 				Toast.makeText(MainActivity.this, "Event has been already added!", Toast.LENGTH_SHORT).show();
 			}

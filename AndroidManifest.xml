@@ -5,12 +5,12 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="11"
+        android:minSdkVersion="12"
         android:targetSdkVersion="17" />
 
     <meta-data
         android:name="com.google.android.maps.v2.API_KEY"
-        android:value="AIzaSyB-vhTF2SziqVVvPNtFGiIJ_NRueNMc3r0" />
+        android:value="AIzaSyAJ8d2Jc6PhN2xxwGiSjIwiRVZlTkwteGs" />
 
     <permission
         android:name="com.example.map.permission.MAPS_RECIEVE"
@@ -69,6 +69,11 @@
             android:label="@string/title_activity_splash_new" >
         </activity>
 
+        <meta-data
+        android:name="com.google.android.maps.v2.API_KEY"
+        android:value="AIzaSyA797xGV4RIqkapOYWNk5KZq84p4rvHsW8" />
+        
+        
         <receiver android:name="com.delta.eventnotification.NotiReceiver" >
         </receiver>
     </application>
