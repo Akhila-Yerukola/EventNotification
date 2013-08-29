@@ -27,10 +27,12 @@ public class Notification extends Activity implements OnClickListener,
 	Button save, cancel;
 	EventDb data;
 	String eName, eTime, eDate, eLoc, eDesc, timeToBeSet;
+	Integer ePic;
 	String[] choices = { "1 hour before", "2 hours before" };
 	Spinner spinner;
 	List events = new ArrayList();
-	int length, hr, min, date, month, year;
+	int length, hr, min, date, month, year ;
+	Double lat, lng;
 	static int c = 0;
 
 	@Override
@@ -58,6 +60,10 @@ public class Notification extends Activity implements OnClickListener,
 		eDate = event.getStringExtra("date");
 		eLoc = event.getStringExtra("venue");
 		eDesc = event.getStringExtra("desc");
+		lat=event.getDoubleExtra("lat", 0);
+		lng=event.getDoubleExtra("lng", 0);
+		//pic=event.getIntExtra("pic", 0);
+		ePic= event.getIntExtra("pic", R.drawable.ic_launcher);
 		// data.open();
 		// Cursor cursor = data.getDetails(eventName);
 		// data.close();
@@ -75,9 +81,9 @@ public class Notification extends Activity implements OnClickListener,
 		name.setText(eName);
 		hr = Integer.parseInt(eTime.substring(0, 2));
 		min = Integer.parseInt(eTime.substring(3, 5));
-		date = Integer.parseInt(eDate.substring(0, 2));
-		month = Integer.parseInt(eDate.substring(3, 5));
-		year = Integer.parseInt(eDate.substring(6));
+		date = Integer.parseInt(eDate.substring(8));
+		month = Integer.parseInt(eDate.substring(5, 7));
+		year = Integer.parseInt(eDate.substring(0,4));
 
 		venue.setText(eLoc);
 		dateNtime.setText(eDate + "  " + eTime);
@@ -93,7 +99,7 @@ public class Notification extends Activity implements OnClickListener,
 			boolean work = true;
 			try {
 				data.open();
-				data.createEntry(eName, eDate, eTime, eDesc, eLoc);
+				data.createEntry(eName, eDate, eTime, eDesc, eLoc, ePic);
 				data.close();
 			} catch (Exception e) {
 				work = false;
@@ -111,6 +117,9 @@ public class Notification extends Activity implements OnClickListener,
 						NotiReceiver.class);
 				intent.putExtra("name", eName);
 				intent.putExtra("venue", eLoc);
+				intent.putExtra("lat", lat);
+				intent.putExtra("lng", lng);
+				intent.putExtra("pic", ePic);
 
 				AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 				PendingIntent pendingIntent = PendingIntent.getBroadcast(

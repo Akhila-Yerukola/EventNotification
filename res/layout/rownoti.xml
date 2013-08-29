@@ -14,13 +14,14 @@
         android:src="@drawable/ic_launcher" />
 
     <TextView
-        android:id="@+id/Name1"
+        android:id="@+id/Date1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignRight="@+id/Venue1"
-        android:layout_alignTop="@+id/icon1"
-        android:text="Name"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
+        android:layout_below="@+id/Name1"
+        android:layout_marginLeft="14dp"
+        android:layout_toRightOf="@+id/icon1"
+        android:text="Date"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
 
     <TextView
         android:id="@+id/Venue1"
@@ -32,13 +33,12 @@
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
-        android:id="@+id/Date1"
+        android:id="@+id/Name1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/Name1"
-        android:layout_marginLeft="14dp"
-        android:layout_toRightOf="@+id/icon1"
-        android:text="Date"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:layout_alignLeft="@+id/Date1"
+        android:layout_alignTop="@+id/icon1"
+        android:text="Name"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
 </RelativeLayout>

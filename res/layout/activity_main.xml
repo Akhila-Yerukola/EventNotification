@@ -31,14 +31,15 @@
                     android:layout_height="fill_parent"
                     android:orientation="vertical" >
 
-                    <ListView
-                        android:id="@+id/eventList"
+                    <GridView
+                        android:id="@+id/grid"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:cacheColorHint="@android:color/transparent"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:smoothScrollbar="true" />
+                        android:layout_alignParentTop="true"
+                        android:gravity="center"
+                        android:numColumns="3"
+                        android:stretchMode="columnWidth" >
+                    </GridView>
                 </LinearLayout>
 
                 <LinearLayout

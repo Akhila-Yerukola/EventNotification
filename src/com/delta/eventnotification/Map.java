@@ -24,7 +24,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class Map extends android.support.v4.app.FragmentActivity {
-	int position;
+	
 	private GoogleMap mMap;
 	GoogleMapOptions options;
 	SupportMapFragment myMap;
@@ -35,7 +35,7 @@ public class Map extends android.support.v4.app.FragmentActivity {
 	String bestProvider;
 	List<Address> user = null;
 	double lat;
-	double lng;
+	double lng,latOfDest,lngOfDest;
 
 
 	@Override
@@ -43,7 +43,8 @@ public class Map extends android.support.v4.app.FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map);
 		Intent getDetails =getIntent();
-		position=getDetails.getIntExtra("position", 0);
+		latOfDest=getDetails.getDoubleExtra("lat", 0);
+		lngOfDest=getDetails.getDoubleExtra("lng", 0);
 		
 		android.support.v4.app.FragmentManager myFragmentManager = getSupportFragmentManager();
 		SupportMapFragment mySupportMapFragment = (SupportMapFragment) myFragmentManager
@@ -78,7 +79,7 @@ public class Map extends android.support.v4.app.FragmentActivity {
 			}
 		}
 
-		LatLng latLng = new LatLng(12.9667, 77.5833);
+		LatLng latLng = new LatLng(latOfDest, lngOfDest);
 		mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 		mMap.addMarker(new MarkerOptions()
 				.position(latLng)
@@ -89,7 +90,7 @@ public class Map extends android.support.v4.app.FragmentActivity {
 		mMap.getUiSettings().setZoomControlsEnabled(true);
 		mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 10));
 
-		String uri = "http://maps.google.com/maps?f=d&hl=en&saddr="+lat+","+lng+"&daddr="+"12.9667"+","+"77.5833";
+		String uri = "http://maps.google.com/maps?f=d&hl=en&saddr="+lat+","+lng+"&daddr="+latOfDest+","+lngOfDest;
 		Intent intent = new Intent(android.content.Intent.ACTION_VIEW, Uri.parse(uri));
 		intent.setClassName("com.google.android.apps.maps", "com.google.android.maps.MapsActivity");
 		startActivity(intent);
