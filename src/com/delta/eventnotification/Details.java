@@ -3,6 +3,9 @@ package com.delta.eventnotification;
 import java.util.HashMap;
 import java.util.List;
 
+import universalImageLoader.com.nostra13.universalimageloader.core.DisplayImageOptions;
+import universalImageLoader.com.nostra13.universalimageloader.core.ImageLoader;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -16,21 +19,29 @@ public class Details extends Activity {
 	EventDb data;
 	List<HashMap<String, String>> list;
 	ImageView pic ;
+	ImageLoader imageLoader;
+	DisplayImageOptions options;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.details);
 		Intent getDetails = getIntent();
+		imageLoader = ImageLoader.getInstance();
 		// position = getDetails.getIntExtra("position", 0);
 		Intent event = getIntent();
+		options = new DisplayImageOptions.Builder()
+		.showImageForEmptyUri(R.drawable.logo)
+		.showImageOnFail(R.drawable.ic_launcher).cacheInMemory(true)
+		.cacheOnDisc(true).build();
 		pic = (ImageView) findViewById(R.id.imageView1);
 		name = (TextView) findViewById(R.id.tvName);
 		desc = (TextView) findViewById(R.id.tvDesc);
 		time = (TextView) findViewById(R.id.tvTime);
 		date = (TextView) findViewById(R.id.tvDate);
 		location = (TextView) findViewById(R.id.tvVenue);
-		pic.setImageResource(event.getIntExtra("pic", R.drawable.ic_launcher));
+		imageLoader.displayImage(event.getStringExtra("pic"), pic, options);
+		//pic.setImageResource(event.getIntExtra("pic", R.drawable.ic_launcher));
 		name.setText(event.getStringExtra("name"));
 		date.setText(event.getStringExtra("date"));
 		time.setText(event.getStringExtra("time"));

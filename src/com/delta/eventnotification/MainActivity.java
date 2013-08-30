@@ -1,6 +1,7 @@
 package com.delta.eventnotification;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -20,10 +21,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -45,13 +49,21 @@ import android.widget.TabHost.TabSpec;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.nostra13.universalimageloader.core.DisplayImageOptions;
-import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.display.RoundedBitmapDisplayer;
+import universalImageLoader.com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiscCache;
+import universalImageLoader.com.nostra13.universalimageloader.cache.disc.naming.HashCodeFileNameGenerator;
+import universalImageLoader.com.nostra13.universalimageloader.cache.memory.impl.UsingFreqLimitedMemoryCache;
+import universalImageLoader.com.nostra13.universalimageloader.core.DisplayImageOptions;
+import universalImageLoader.com.nostra13.universalimageloader.core.ImageLoader;
+import universalImageLoader.com.nostra13.universalimageloader.core.ImageLoaderConfiguration;
+import universalImageLoader.com.nostra13.universalimageloader.core.assist.QueueProcessingType;
+import universalImageLoader.com.nostra13.universalimageloader.core.download.BaseImageDownloader;
+import universalImageLoader.com.nostra13.universalimageloader.utils.StorageUtils;
 
 public class MainActivity extends Activity {
+
 	LoadData objects;
 	ImageLoader imageLoader;
+	ImageLoaderConfiguration config;
 	List<HashMap<String, String>> listOfEvents;
 	DisplayImageOptions options;
 	ListView notifList;
@@ -73,6 +85,7 @@ public class MainActivity extends Activity {
 	ArrayList<String> etime = new ArrayList<String>();
 	ArrayList<String> evenue = new ArrayList<String>();
 	String str, check;
+	SharedPreferences alarm ;
 	int position1, l;
 	static int pageNo = 0, length = 0;
 
@@ -82,30 +95,60 @@ public class MainActivity extends Activity {
 			R.drawable.ic_launcher, R.drawable.ic_launcher };
 
 	static class ViewHolder {
-		ImageView icon;
-		TextView nametext;
+		ImageView image;
+		TextView text;
 		TextView datetext;
 		TextView timetext;
 		TextView venuetext;
 
 	}
+	PendingIntent pendingIntent;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		objects = new LoadData();
-		pageNo=0;
+		pageNo = 0;
+		alarm = getSharedPreferences("AlarmTracker", MODE_PRIVATE);
+		if(alarm.getString("check", "No")=="No")
+		{
+			Intent myIntent = new Intent(getBaseContext(), MainActivity.class);
+
+            pendingIntent = PendingIntent.getService(MainActivity.this, 0, myIntent, 0);
+
+            AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
+            alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, Calendar.getInstance().getTimeInMillis(),
+                    12*60*60*1000, pendingIntent);
+		}
+		
+		SharedPreferences.Editor editor = alarm.edit();
+		editor.putString("check", "Set");
+		editor.commit();
+		
 		// http://10.0.2.2:8080
 		objects.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
 				+ (pageNo++) + "&ipp=20");
-
+		imageLoader = ImageLoader.getInstance();
 		options = new DisplayImageOptions.Builder()
 				.showImageForEmptyUri(R.drawable.logo)
 				.showImageOnFail(R.drawable.ic_launcher).cacheInMemory(true)
-				.cacheOnDisc(true).displayer(new RoundedBitmapDisplayer(20))
+				.cacheOnDisc(true).build();
+		File cacheDir = StorageUtils.getCacheDirectory(this);
+		config = new ImageLoaderConfiguration.Builder(this)
+				.memoryCacheExtraOptions(480, 800)
+				.taskExecutor(AsyncTask.THREAD_POOL_EXECUTOR).threadPoolSize(3)
+				.threadPriority(Thread.NORM_PRIORITY - 1)
+				.tasksProcessingOrder(QueueProcessingType.FIFO)
+				.denyCacheImageMultipleSizesInMemory()
+				.memoryCache(new UsingFreqLimitedMemoryCache(2 * 1024 * 1024))
+				.memoryCacheSize(2 * 1024 * 1024)
+				.discCache(new UnlimitedDiscCache(cacheDir))
+				.discCacheSize(50 * 1024 * 1024).discCacheFileCount(100)
+				.discCacheFileNameGenerator(new HashCodeFileNameGenerator())
+				.imageDownloader(new BaseImageDownloader(this))
+				.defaultDisplayImageOptions(DisplayImageOptions.createSimple())
 				.build();
-
 		TabHost th = (TabHost) findViewById(R.id.tabhost);
 		th.setup();
 		TabSpec specs = th.newTabSpec("tag1");
@@ -151,16 +194,25 @@ public class MainActivity extends Activity {
 			public void onItemClick(AdapterView<?> arg0, View arg1,
 					int position, long arg3) {
 				// TODO Auto-generated method stub
-				Intent intent = new Intent(MainActivity.this, Details.class);
-				// details.putExtra("position", position);
-				intent.putExtra("name", name.get(position));
-				intent.putExtra("desc", desc.get(position));
-				intent.putExtra("venue", venue.get(position));
-				intent.putExtra("date", date.get(position));
-				intent.putExtra("time", time.get(position));
-				intent.putExtra("pic", icon[position]);
-				Log.e("clicked position", Integer.toString(position));
-				startActivity(intent);
+				if (position < length) {
+					Intent intent = new Intent(MainActivity.this, Details.class);
+					// details.putExtra("position", position);
+					intent.putExtra("name", name.get(position));
+					intent.putExtra("desc", desc.get(position));
+					intent.putExtra("venue", venue.get(position));
+					intent.putExtra("date", date.get(position));
+					intent.putExtra("time", time.get(position));
+					intent.putExtra("pic", pic.get(position));
+					Log.e("clicked position", Integer.toString(position));
+					startActivity(intent);
+				}
+				if(position==length)
+				{
+					LoadData objects1 = new LoadData();
+					// http://10.0.2.2:8080
+					objects1.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
+							+ (pageNo++) + "&ipp=20");
+				}
 
 			}
 		});
@@ -231,10 +283,15 @@ public class MainActivity extends Activity {
 			intent.putExtra("time", time.get(position1));
 			intent.putExtra("lat", lat.get(position1));
 			intent.putExtra("lng", lng.get(position1));
-			intent.putExtra("pic", icon[position1]);
+			//intent.putExtra("pic", pic.get(position1));
 
 			startActivity(intent);
 
+		}
+		else if (flag.get(position1) == "true") {
+			Toast.makeText(MainActivity.this,
+					"Event has been already added!", Toast.LENGTH_SHORT)
+					.show();
 		}
 	}
 
@@ -266,11 +323,7 @@ public class MainActivity extends Activity {
 				Toast.makeText(this, "Date already passed!", Toast.LENGTH_SHORT)
 						.show();
 
-			if (flag.get(position1) == "true") {
-				Toast.makeText(MainActivity.this,
-						"Event has been already added!", Toast.LENGTH_SHORT)
-						.show();
-			}
+			
 
 			return true;
 		case R.id.delete:
@@ -378,7 +431,9 @@ public class MainActivity extends Activity {
 			item3.setText(evenue.get(position));
 
 			ImageView iconview = (ImageView) row1.findViewById(R.id.icon);
-			iconview.setImageResource(R.drawable.common_signin_btn_icon_dark);
+			//imageLoader.init(config);
+			imageLoader.displayImage(pic.get(position), iconview, options);
+			//iconview.setImageResource(R.drawable.common_signin_btn_icon_dark);
 			// ViewHolder holder = new ViewHolder();
 			// holder.icon = (ImageView) convertView.findViewById(R.id.icon);
 			// holder.nametext = (TextView) convertView.findViewById(R.id.Name);
@@ -409,29 +464,30 @@ public class MainActivity extends Activity {
 			LayoutInflater inflater = MainActivity.this.getLayoutInflater();
 			View row1 = inflater.inflate(R.layout.grid, parent, false);
 
-			// Declare and define the TextView, "item." This is where
-			// the name of each item will appear.
 			TextView item = (TextView) row1.findViewById(R.id.Name);
 			Log.e("name in adapter", name.get(position));
 			item.setText(name.get(position));
 			ImageView iconView = (ImageView) row1.findViewById(R.id.Pic);
-			iconView.setImageResource(R.drawable.common_signin_btn_icon_dark);
-			// ViewHolder holder = new ViewHolder();
-			// if(row1==null)
-			// {
-			//
-			// holder.icon = (ImageView) row1.findViewById(R.id.icon);
-			// holder.nametext = (TextView) row1.findViewById(R.id.Name);
-			// holder.datetext = (TextView) row1.findViewById(R.id.Date);
-			// holder.timetext = (TextView) row1.findViewById(R.id.Time);
-			// row1.setTag(holder);
-			// }
-			// else
-			// holder=(ViewHolder)row1.getTag();
-			// imageLoader.displayImage(pic[3], holder.icon, options);
+			// iconView.setImageResource(R.drawable.common_signin_btn_icon_dark);
 
-			// iconview.setImageResource(icon[position]);
-			// Log.e("count11",Integer.toString(position));
+			// View view = convertView;
+			// final ViewHolder holder;
+			// if (convertView == null) {
+			// view = getLayoutInflater().inflate(R.layout.grid, parent, false);
+			// holder = new ViewHolder();
+			// holder.text = (TextView) view.findViewById(R.id.Name);
+			// holder.image = (ImageView) view.findViewById(R.id.Pic);
+			// view.setTag(holder);
+			// } else {
+			// holder = (ViewHolder) view.getTag();
+			// }
+
+			// holder.text.setText(name.get(position));
+
+			System.out.println(pic.get(position));
+			imageLoader.init(config);
+			imageLoader.displayImage(pic.get(position), iconView, options);
+
 			return row1;
 
 		}
@@ -439,7 +495,7 @@ public class MainActivity extends Activity {
 		@Override
 		public int getCount() {
 			// TODO Auto-generated method stub
-			return length;
+			return length + 1;
 		}
 	}
 
@@ -548,7 +604,9 @@ public class MainActivity extends Activity {
 					Log.e("name", name.get(i));
 				}
 				length = i;
-
+				name.add(i, "More");
+				pic.add(i,
+						Integer.toString(R.drawable.common_signin_btn_text_normal_dark));
 				Log.e("length of event list", Integer.toString(length));
 			} catch (JSONException e) {
 				Log.e("JSON Parser", "Error parsing data " + e.toString());

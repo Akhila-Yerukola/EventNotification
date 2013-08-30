@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import universalImageLoader.com.nostra13.universalimageloader.core.DisplayImageOptions;
+
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -34,6 +36,7 @@ public class Notification extends Activity implements OnClickListener,
 	int length, hr, min, date, month, year ;
 	Double lat, lng;
 	static int c = 0;
+	DisplayImageOptions options;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +56,11 @@ public class Notification extends Activity implements OnClickListener,
 		spinner = (Spinner) findViewById(R.id.spinner1);
 		spinner.setOnItemSelectedListener(this);
 		spinner.setAdapter(adapter);
+		
+		options = new DisplayImageOptions.Builder()
+		.showImageForEmptyUri(R.drawable.logo)
+		.showImageOnFail(R.drawable.ic_launcher).cacheInMemory(true)
+		.cacheOnDisc(true).build();
 		Intent event = getIntent();
 
 		eName = event.getStringExtra("name");
@@ -99,7 +107,7 @@ public class Notification extends Activity implements OnClickListener,
 			boolean work = true;
 			try {
 				data.open();
-				data.createEntry(eName, eDate, eTime, eDesc, eLoc, ePic);
+				data.createEntry(eName, eDate, eTime, eDesc, eLoc);
 				data.close();
 			} catch (Exception e) {
 				work = false;
