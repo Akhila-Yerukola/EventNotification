@@ -25,6 +25,7 @@ import android.widget.Toast;
 public class Notification extends Activity implements OnClickListener,
 		OnItemSelectedListener {
 
+	
 	TextView name, venue, dateNtime;
 	Button save, cancel;
 	EventDb data;
@@ -33,7 +34,7 @@ public class Notification extends Activity implements OnClickListener,
 	String[] choices = { "1 hour before", "2 hours before" };
 	Spinner spinner;
 	List events = new ArrayList();
-	int length, hr, min, date, month, year ;
+	int length, hr, min, date, month, year,eid,pos;
 	Double lat, lng;
 	static int c = 0;
 	DisplayImageOptions options;
@@ -56,11 +57,11 @@ public class Notification extends Activity implements OnClickListener,
 		spinner = (Spinner) findViewById(R.id.spinner1);
 		spinner.setOnItemSelectedListener(this);
 		spinner.setAdapter(adapter);
-		
+
 		options = new DisplayImageOptions.Builder()
-		.showImageForEmptyUri(R.drawable.logo)
-		.showImageOnFail(R.drawable.ic_launcher).cacheInMemory(true)
-		.cacheOnDisc(true).build();
+				.showImageForEmptyUri(R.drawable.logo)
+				.showImageOnFail(R.drawable.ic_launcher).cacheInMemory(true)
+				.cacheOnDisc(true).build();
 		Intent event = getIntent();
 
 		eName = event.getStringExtra("name");
@@ -68,10 +69,12 @@ public class Notification extends Activity implements OnClickListener,
 		eDate = event.getStringExtra("date");
 		eLoc = event.getStringExtra("venue");
 		eDesc = event.getStringExtra("desc");
-		lat=event.getDoubleExtra("lat", 0);
-		lng=event.getDoubleExtra("lng", 0);
-		//pic=event.getIntExtra("pic", 0);
-		ePic= event.getIntExtra("pic", R.drawable.ic_launcher);
+		lat = event.getDoubleExtra("lat", 0);
+		lng = event.getDoubleExtra("lng", 0);
+		eid=event.getIntExtra("eid", 0);
+		pos=event.getIntExtra("pos", 0);
+		// pic=event.getIntExtra("pic", 0);
+		ePic = event.getIntExtra("pic", R.drawable.ic_launcher);
 		// data.open();
 		// Cursor cursor = data.getDetails(eventName);
 		// data.close();
@@ -91,7 +94,7 @@ public class Notification extends Activity implements OnClickListener,
 		min = Integer.parseInt(eTime.substring(3, 5));
 		date = Integer.parseInt(eDate.substring(8));
 		month = Integer.parseInt(eDate.substring(5, 7));
-		year = Integer.parseInt(eDate.substring(0,4));
+		year = Integer.parseInt(eDate.substring(0, 4));
 
 		venue.setText(eLoc);
 		dateNtime.setText(eDate + "  " + eTime);
@@ -128,11 +131,14 @@ public class Notification extends Activity implements OnClickListener,
 				intent.putExtra("lat", lat);
 				intent.putExtra("lng", lng);
 				intent.putExtra("pic", ePic);
+				intent.putExtra("eid", eid);
+				MainActivity.flagForEvent.add(pos);
 
 				AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 				PendingIntent pendingIntent = PendingIntent.getBroadcast(
-						Notification.this, c++, intent,
+						Notification.this, eid, intent,
 						Intent.FLAG_ACTIVITY_NEW_TASK);
+
 				Log.e("hour",
 						Integer.toString(hr - Integer.parseInt(timeToBeSet)));
 				Log.e("min", Integer.toString(min));
@@ -141,11 +147,11 @@ public class Notification extends Activity implements OnClickListener,
 				Log.e("year", Integer.toString(year));
 				Calendar calendar = Calendar.getInstance();
 				calendar.set(Calendar.DAY_OF_MONTH, date);
-				calendar.set(Calendar.MONTH, month-1);
-				calendar.set(Calendar.YEAR, 2013);
-				//calendar.set(Calendar.HOUR_OF_DAY, 11);
-				 calendar.set(Calendar.HOUR_OF_DAY,
-				 hr-Integer.parseInt(timeToBeSet));
+				calendar.set(Calendar.MONTH, month - 1);
+				calendar.set(Calendar.YEAR, year);
+				// calendar.set(Calendar.HOUR_OF_DAY, 11);
+				calendar.set(Calendar.HOUR_OF_DAY,
+						hr - Integer.parseInt(timeToBeSet));
 				calendar.set(Calendar.MINUTE, min);
 				alarmManager.set(AlarmManager.RTC_WAKEUP,
 						calendar.getTimeInMillis(), pendingIntent);

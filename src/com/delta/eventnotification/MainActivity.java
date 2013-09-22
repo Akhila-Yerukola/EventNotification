@@ -24,6 +24,7 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -73,6 +74,7 @@ public class MainActivity extends Activity {
 	ArrayList<Integer> eid = new ArrayList<Integer>();
 	ArrayList<Integer> uid = new ArrayList<Integer>();
 	static ArrayList<String> flag = new ArrayList<String>();
+	static ArrayList<Integer> flagForEvent = new ArrayList<Integer>();
 	ArrayList<String> desc = new ArrayList<String>();
 	ArrayList<String> name = new ArrayList<String>();
 	ArrayList<String> date = new ArrayList<String>();
@@ -84,15 +86,18 @@ public class MainActivity extends Activity {
 	ArrayList<String> edate = new ArrayList<String>();
 	ArrayList<String> etime = new ArrayList<String>();
 	ArrayList<String> evenue = new ArrayList<String>();
+	ArrayList<Integer> ver = new ArrayList<Integer>();
 	String str, check;
-	SharedPreferences alarm ;
-	int position1, l;
+	SharedPreferences alarm, init;
+	int position1,more=0,posOfNoti,a=0;
 	static int pageNo = 0, length = 0;
 
+	public static ProgressDialog progresstwig = null;
+
 	EventDb event;
-	Integer[] icon = { R.drawable.common_signin_btn_icon_dark,
+	Integer[] icon = { R.drawable.fest, R.drawable.ic_launcher,
 			R.drawable.ic_launcher, R.drawable.ic_launcher,
-			R.drawable.ic_launcher, R.drawable.ic_launcher };
+			R.drawable.ic_launcher };
 
 	static class ViewHolder {
 		ImageView image;
@@ -102,6 +107,7 @@ public class MainActivity extends Activity {
 		TextView venuetext;
 
 	}
+
 	PendingIntent pendingIntent;
 
 	@Override
@@ -109,26 +115,43 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		objects = new LoadData();
+		init = getSharedPreferences("flag", MODE_PRIVATE);
+		Log.e("before initialising flag var", "entered");
+		if (init.getString("flag", "false") == "false") {
+			Log.e("initialising flag var", "entered");
+			for (int i = 0; i < 150; i++)
+				flag.add(i, "false");
+		}
+		SharedPreferences.Editor edit = init.edit();
+		edit.putString("flag", "true");
+		edit.commit();
+
 		pageNo = 0;
+		length = 0;
 		alarm = getSharedPreferences("AlarmTracker", MODE_PRIVATE);
-		if(alarm.getString("check", "No")=="No")
-		{
+		Log.e("alarm check before", alarm.getString("check", "No"));
+		if (alarm.getString("check", "No") == "No") {
+			Log.e("check for alarm to be set 12 hours", "Entered");
 			Intent myIntent = new Intent(getBaseContext(), MainActivity.class);
 
-            pendingIntent = PendingIntent.getService(MainActivity.this, 0, myIntent, 0);
+			pendingIntent = PendingIntent.getService(MainActivity.this, 0,
+					myIntent, 0);
 
-            AlarmManager alarmManager = (AlarmManager)getSystemService(ALARM_SERVICE);
-            alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, Calendar.getInstance().getTimeInMillis(),
-                    12*60*60*1000, pendingIntent);
+			AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+			alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+					Calendar.getInstance().getTimeInMillis(),
+					12 * 60 * 60 * 1000, pendingIntent);
+
 		}
-		
+
 		SharedPreferences.Editor editor = alarm.edit();
 		editor.putString("check", "Set");
 		editor.commit();
-		
 		// http://10.0.2.2:8080
+		//objects.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
+			//	+ (pageNo++) + "&ipp=5");
 		objects.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
-				+ (pageNo++) + "&ipp=20");
+					+ (pageNo++) + "&ipp=5");
 		imageLoader = ImageLoader.getInstance();
 		options = new DisplayImageOptions.Builder()
 				.showImageForEmptyUri(R.drawable.logo)
@@ -206,12 +229,11 @@ public class MainActivity extends Activity {
 					Log.e("clicked position", Integer.toString(position));
 					startActivity(intent);
 				}
-				if(position==length)
-				{
+				if (position == length) {
 					LoadData objects1 = new LoadData();
 					// http://10.0.2.2:8080
 					objects1.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
-							+ (pageNo++) + "&ipp=20");
+							+ (pageNo++) + "&ipp=5");
 				}
 
 			}
@@ -224,7 +246,10 @@ public class MainActivity extends Activity {
 					public boolean onItemLongClick(AdapterView<?> arg0,
 							View arg1, int arg2, long arg3) {
 						// TODO Auto-generated method stub
+						//flagForEvent.add(a++, arg2);
 						position1 = arg2;
+						Log.e("Postion being clicked",
+								Integer.toString(position1));
 						// flag[arg2]="true";
 						return false;
 
@@ -238,6 +263,7 @@ public class MainActivity extends Activity {
 					public boolean onItemLongClick(AdapterView<?> arg0,
 							View arg1, int arg2, long arg3) {
 						// TODO Auto-generated method stub
+					
 						str = name.get(arg2);
 						return false;
 
@@ -273,26 +299,21 @@ public class MainActivity extends Activity {
 	}
 
 	void check() {
-		if (flag.get(position1) == "false") {
-			flag.add(position1, "true");
-			Intent intent = new Intent(MainActivity.this, Notification.class);
-			intent.putExtra("name", name.get(position1));
-			intent.putExtra("desc", desc.get(position1));
-			intent.putExtra("venue", venue.get(position1));
-			intent.putExtra("date", date.get(position1));
-			intent.putExtra("time", time.get(position1));
-			intent.putExtra("lat", lat.get(position1));
-			intent.putExtra("lng", lng.get(position1));
-			//intent.putExtra("pic", pic.get(position1));
 
-			startActivity(intent);
+		Intent intent = new Intent(MainActivity.this, Notification.class);
+		intent.putExtra("name", name.get(position1));
+		intent.putExtra("desc", desc.get(position1));
+		intent.putExtra("venue", venue.get(position1));
+		intent.putExtra("date", date.get(position1));
+		intent.putExtra("time", time.get(position1));
+		intent.putExtra("lat", lat.get(position1));
+		intent.putExtra("lng", lng.get(position1));
+		intent.putExtra("eid", eid.get(position1));
+		intent.putExtra("pos", position1);
+		// intent.putExtra("pic", pic.get(position1));
 
-		}
-		else if (flag.get(position1) == "true") {
-			Toast.makeText(MainActivity.this,
-					"Event has been already added!", Toast.LENGTH_SHORT)
-					.show();
-		}
+		startActivity(intent);
+
 	}
 
 	public boolean onContextItemSelected(MenuItem item) {
@@ -309,21 +330,27 @@ public class MainActivity extends Activity {
 		// String[] names = getResources().getStringArray(R.array.names);
 		switch (item.getItemId()) {
 		case R.id.createNot:
-			if (yr == year1) {
-				if (mon == month1) {
-					if (day <= date1) {
+			if (flag.get(position1) == "false") {
+				Log.e("flag of event", flag.get(position1));
+				flag.add(position1, "true");
+				if (yr == year1) {
+					if (mon == month1 - 1) {
+						if (day <= date1) {
+							check();
+						}
+					} else if (mon < month1 - 1) {
 						check();
 					}
-				} else if (mon < month1) {
+				} else if (yr < year1) {
 					check();
-				}
-			} else if (yr < year1) {
-				check();
-			} else
-				Toast.makeText(this, "Date already passed!", Toast.LENGTH_SHORT)
+				} else
+					Toast.makeText(this, "Date already passed!",
+							Toast.LENGTH_SHORT).show();
+			} else if (flag.get(position1) == "true") {
+				Toast.makeText(MainActivity.this,
+						"Event has been already added!", Toast.LENGTH_SHORT)
 						.show();
-
-			
+			}
 
 			return true;
 		case R.id.delete:
@@ -339,6 +366,15 @@ public class MainActivity extends Activity {
 							event.open();
 							event.delete(str);
 							event.close();
+							for(int i=0;i<name.size();i++)
+							{
+								if(name.get(i)==str)
+								{
+									posOfNoti=i;
+									break;
+								}
+							}
+							NotiReceiver.notificationManager.cancel(eid.get(posOfNoti));
 
 							Toast.makeText(getApplicationContext(),
 									"Data Deleted Successfully",
@@ -391,7 +427,7 @@ public class MainActivity extends Activity {
 			LoadData objects1 = new LoadData();
 			// http://10.0.2.2:8080
 			objects1.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
-					+ (pageNo++) + "&ipp=20");
+					+ (pageNo++) + "&ipp=5");
 			break;
 
 		}
@@ -430,10 +466,10 @@ public class MainActivity extends Activity {
 			TextView item3 = (TextView) row1.findViewById(R.id.Venue);
 			item3.setText(evenue.get(position));
 
-			ImageView iconview = (ImageView) row1.findViewById(R.id.icon);
-			//imageLoader.init(config);
+			ImageView iconview = (ImageView) row1.findViewById(R.id.Icon);
+			// imageLoader.init(config);
 			imageLoader.displayImage(pic.get(position), iconview, options);
-			//iconview.setImageResource(R.drawable.common_signin_btn_icon_dark);
+			// iconview.setImageResource(R.drawable.common_signin_btn_icon_dark);
 			// ViewHolder holder = new ViewHolder();
 			// holder.icon = (ImageView) convertView.findViewById(R.id.icon);
 			// holder.nametext = (TextView) convertView.findViewById(R.id.Name);
@@ -467,7 +503,7 @@ public class MainActivity extends Activity {
 			TextView item = (TextView) row1.findViewById(R.id.Name);
 			Log.e("name in adapter", name.get(position));
 			item.setText(name.get(position));
-			ImageView iconView = (ImageView) row1.findViewById(R.id.Pic);
+			ImageView iconView = (ImageView)row1.findViewById(R.id.Pic);
 			// iconView.setImageResource(R.drawable.common_signin_btn_icon_dark);
 
 			// View view = convertView;
@@ -485,8 +521,12 @@ public class MainActivity extends Activity {
 			// holder.text.setText(name.get(position));
 
 			System.out.println(pic.get(position));
+			if(position!=length){
 			imageLoader.init(config);
 			imageLoader.displayImage(pic.get(position), iconView, options);
+			}
+			if(position==length && more!=1)
+				iconView.setImageResource(R.drawable.add_new);
 
 			return row1;
 
@@ -513,15 +553,17 @@ public class MainActivity extends Activity {
 		private static final String TAG_LNG = "lng";
 		private static final String TAG_EID = "eid";
 		private static final String TAG_UID = "uid";
+		private static final String TAG_VER = "ver";
 		JSONArray contacts = null;
 
 		InputStream is = null;
 		JSONObject jObj = null;
 		String json = "";
 
-		protected void onPreExecute(String json) {
+		protected void onPreExecute() {
 			// TODO Auto-generated method stub
-
+			progresstwig = ProgressDialog.show(MainActivity.this, "",
+					"Loading...");
 			System.out.println("pre-execute");
 
 		}
@@ -571,14 +613,15 @@ public class MainActivity extends Activity {
 			// TODO Auto-generated method stub
 			super.onPostExecute(result);
 			System.out.println("post-execute");
+			progresstwig.dismiss();
 			try {
 				System.out.println("post-execute");
 				jObj = new JSONObject(json);
 
 				contacts = jObj.getJSONArray("data");
-				int i;
+				int i, c = 0;
 				for (i = length; i < length + contacts.length(); i++) {
-					JSONObject obj = contacts.getJSONObject(i);
+					JSONObject obj = contacts.getJSONObject(c++);
 					String ename = obj.getString(TAG_NAME);
 					String edate = obj.getString(TAG_DATE);
 					String etime = obj.getString(TAG_TIME);
@@ -587,13 +630,14 @@ public class MainActivity extends Activity {
 					String epic = obj.getString(TAG_PIC);
 					Integer eeid = obj.getInt(TAG_EID);
 					Integer euid = obj.getInt(TAG_UID);
+					Integer ever = obj.getInt(TAG_VER);
 					Double elat = obj.getDouble(TAG_LAT);
 					Double elng = obj.getDouble(TAG_LNG);
 					name.add(i, ename);
 					date.add(i, edate);
 					time.add(i, etime);
 					desc.add(i, edesc);
-					flag.add(i, "false");
+					ver.add(i,ever);
 					venue.add(i, evenue);
 					eid.add(i, eeid);
 					uid.add(i, euid);
@@ -603,10 +647,16 @@ public class MainActivity extends Activity {
 
 					Log.e("name", name.get(i));
 				}
-				length = i;
-				name.add(i, "More");
-				pic.add(i,
-						Integer.toString(R.drawable.common_signin_btn_text_normal_dark));
+				if (contacts.length() > 0) {
+					length = i;
+					name.add(i, "More");
+					pic.add(i, Integer.toString(R.drawable.logo));
+				}
+				else if(contacts.length()==0)
+				{
+					more=1;
+					length=i-1;
+				}
 				Log.e("length of event list", Integer.toString(length));
 			} catch (JSONException e) {
 				Log.e("JSON Parser", "Error parsing data " + e.toString());

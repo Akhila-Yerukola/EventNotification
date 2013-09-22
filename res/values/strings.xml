@@ -10,4 +10,6 @@
     <string name="title_activity_map">Map</string>
     <string name="title_activity_splash_new">SplashNew</string>
 
+    <color name="white">#ffffff</color>
+
 </resources>
