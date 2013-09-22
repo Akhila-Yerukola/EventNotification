@@ -82,6 +82,9 @@ public class MainActivity extends Activity {
 	ArrayList<String> time = new ArrayList<String>();
 	ArrayList<String> venue = new ArrayList<String>();
 	ArrayList<String> edesc = new ArrayList<String>();
+	ArrayList<String> ever = new ArrayList<String>();
+	ArrayList<String> elat = new ArrayList<String>();
+	ArrayList<String> elng = new ArrayList<String>();
 	ArrayList<String> ename = new ArrayList<String>();
 	ArrayList<String> edate = new ArrayList<String>();
 	ArrayList<String> etime = new ArrayList<String>();
@@ -89,12 +92,13 @@ public class MainActivity extends Activity {
 	ArrayList<Integer> ver = new ArrayList<Integer>();
 	String str, check;
 	SharedPreferences alarm, init;
-	int position1,more=0,posOfNoti,a=0;
-	static int pageNo = 0, length = 0;
+	int position1, more = 0, posOfNoti, a = 0, pos;
+	int pageNo = 0, length = 0;
 
 	public static ProgressDialog progresstwig = null;
 
 	EventDb event;
+	FlagDb flagCheck;
 	Integer[] icon = { R.drawable.fest, R.drawable.ic_launcher,
 			R.drawable.ic_launcher, R.drawable.ic_launcher,
 			R.drawable.ic_launcher };
@@ -115,43 +119,36 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 		objects = new LoadData();
-		init = getSharedPreferences("flag", MODE_PRIVATE);
-		Log.e("before initialising flag var", "entered");
-		if (init.getString("flag", "false") == "false") {
-			Log.e("initialising flag var", "entered");
-			for (int i = 0; i < 150; i++)
-				flag.add(i, "false");
-		}
-		SharedPreferences.Editor edit = init.edit();
-		edit.putString("flag", "true");
-		edit.commit();
 
-		pageNo = 0;
-		length = 0;
-		alarm = getSharedPreferences("AlarmTracker", MODE_PRIVATE);
-		Log.e("alarm check before", alarm.getString("check", "No"));
-		if (alarm.getString("check", "No") == "No") {
-			Log.e("check for alarm to be set 12 hours", "Entered");
-			Intent myIntent = new Intent(getBaseContext(), MainActivity.class);
-
-			pendingIntent = PendingIntent.getService(MainActivity.this, 0,
-					myIntent, 0);
-
-			AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
-			alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
-					Calendar.getInstance().getTimeInMillis(),
-					12 * 60 * 60 * 1000, pendingIntent);
-
-		}
-
-		SharedPreferences.Editor editor = alarm.edit();
-		editor.putString("check", "Set");
-		editor.commit();
+		// alarm = getSharedPreferences("AlarmTracker", MODE_PRIVATE);
+		// Log.e("alarm check before", alarm.getString("check", "No"));
+		// if (alarm.getString("check", "No") == "No") {
+		// Log.e("check for alarm to be set 12 hours", "Entered!!");
+		// Intent myIntent = new Intent(getBaseContext(), MainActivity.class);
+		//
+		// pendingIntent = PendingIntent.getService(MainActivity.this, 0,
+		// myIntent, 0);
+		//
+		// AlarmManager alarmManager = (AlarmManager)
+		// getSystemService(ALARM_SERVICE);
+		// alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP,
+		// Calendar.getInstance().getTimeInMillis(),
+		// 12 * 60 * 60 * 1000, pendingIntent);
+		//
+		// }
+		//
+		// SharedPreferences.Editor editor = alarm.edit();
+		// editor.putString("check", "Set");
+		// editor.commit();
 		// http://10.0.2.2:8080
-		//objects.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
-			//	+ (pageNo++) + "&ipp=5");
+		// objects.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
+		// + (pageNo++) + "&ipp=5");
+		length = 0;
+		pageNo = 0;
 		objects.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
-					+ (pageNo++) + "&ipp=5");
+				+ (pageNo++) + "&ipp=5");
+		// objects.execute("http://www.pragyan.org/festember/events/api/all.php?token=94a08da1fecbb6e8b46990538c7b50b2&page="
+		// + (pageNo++) + "&ipp=5");
 		imageLoader = ImageLoader.getInstance();
 		options = new DisplayImageOptions.Builder()
 				.showImageForEmptyUri(R.drawable.logo)
@@ -183,18 +180,8 @@ public class MainActivity extends Activity {
 		specs.setIndicator("Notifications");
 		th.addTab(specs);
 		event = new EventDb(MainActivity.this);
-		listOfEvents = new ArrayList<HashMap<String, String>>();
-		event.open();
-		listOfEvents = event.getData();
-		Log.e("length of notifications", Integer.toString(listOfEvents.size()));
-		event.close();
-		for (int i = 0; i < listOfEvents.size(); i++) {
-			edesc.add(i, listOfEvents.get(i).get("desc"));
-			ename.add(i, listOfEvents.get(i).get("name"));
-			etime.add(i, listOfEvents.get(i).get("time"));
-			edate.add(i, listOfEvents.get(i).get("date"));
-			evenue.add(i, listOfEvents.get(i).get("venue"));
-		}
+		flagCheck = new FlagDb(MainActivity.this);
+
 		eventList = (GridView) findViewById(R.id.grid);
 		notifList = (ListView) findViewById(R.id.notiList);
 
@@ -230,10 +217,13 @@ public class MainActivity extends Activity {
 					startActivity(intent);
 				}
 				if (position == length) {
-					LoadData objects1 = new LoadData();
+					LoadData objects2 = new LoadData();
 					// http://10.0.2.2:8080
-					objects1.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
+					objects2.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
 							+ (pageNo++) + "&ipp=5");
+
+					// objects1.execute("http://www.pragyan.org/festember/events/api/all.php?token=94a08da1fecbb6e8b46990538c7b50b2&page="
+					// + (pageNo++) + "&ipp=5");
 				}
 
 			}
@@ -246,7 +236,7 @@ public class MainActivity extends Activity {
 					public boolean onItemLongClick(AdapterView<?> arg0,
 							View arg1, int arg2, long arg3) {
 						// TODO Auto-generated method stub
-						//flagForEvent.add(a++, arg2);
+						// flagForEvent.add(a++, arg2);
 						position1 = arg2;
 						Log.e("Postion being clicked",
 								Integer.toString(position1));
@@ -263,8 +253,8 @@ public class MainActivity extends Activity {
 					public boolean onItemLongClick(AdapterView<?> arg0,
 							View arg1, int arg2, long arg3) {
 						// TODO Auto-generated method stub
-					
-						str = name.get(arg2);
+						pos = arg2;
+						// str = name.get(arg2);
 						return false;
 
 					}
@@ -277,8 +267,8 @@ public class MainActivity extends Activity {
 					int position, long arg3) {
 				// TODO Auto-generated method stub
 				Intent details = new Intent(MainActivity.this, Map.class);
-				details.putExtra("lat", lat.get(position));
-				details.putExtra("lng", lng.get(position));
+				details.putExtra("lat", elat.get(position));
+				details.putExtra("lng", elng.get(position));
 				startActivity(details);
 
 			}
@@ -309,7 +299,9 @@ public class MainActivity extends Activity {
 		intent.putExtra("lat", lat.get(position1));
 		intent.putExtra("lng", lng.get(position1));
 		intent.putExtra("eid", eid.get(position1));
-		intent.putExtra("pos", position1);
+		intent.putExtra("ver", ver.get(position1));
+		intent.putExtra("status", "set");
+		// intent.putExtra("pos", position1);
 		// intent.putExtra("pic", pic.get(position1));
 
 		startActivity(intent);
@@ -330,9 +322,23 @@ public class MainActivity extends Activity {
 		// String[] names = getResources().getStringArray(R.array.names);
 		switch (item.getItemId()) {
 		case R.id.createNot:
-			if (flag.get(position1) == "false") {
-				Log.e("flag of event", flag.get(position1));
-				flag.add(position1, "true");
+			flagCheck.open();
+			String res = flagCheck.getIds();
+			String[] list = res.split(";");
+			flagCheck.close();
+			int f = 0;
+			for (int i = 0; i < list.length; i++) {
+				if (Integer.toString(eid.get(position1)).equals(list[i])) {
+					f = 1;
+					break;
+				}
+			}
+
+			if (f == 0) {
+				// Log.e("flag of event", flag.get(position1));
+				flagCheck.open();
+				flagCheck.createEntry(Integer.toString(eid.get(position1)));
+				flagCheck.close();
 				if (yr == year1) {
 					if (mon == month1 - 1) {
 						if (day <= date1) {
@@ -346,7 +352,7 @@ public class MainActivity extends Activity {
 				} else
 					Toast.makeText(this, "Date already passed!",
 							Toast.LENGTH_SHORT).show();
-			} else if (flag.get(position1) == "true") {
+			} else if (f == 1) {
 				Toast.makeText(MainActivity.this,
 						"Event has been already added!", Toast.LENGTH_SHORT)
 						.show();
@@ -364,24 +370,33 @@ public class MainActivity extends Activity {
 
 						public void onClick(DialogInterface arg0, int arg1) {
 							event.open();
-							event.delete(str);
-							event.close();
-							for(int i=0;i<name.size();i++)
-							{
-								if(name.get(i)==str)
-								{
-									posOfNoti=i;
+							for (int i = 0; i < name.size(); i++) {
+								if (name.get(i).toUpperCase()
+										.equals(ename.get(pos))) {
+									posOfNoti = i;
+
 									break;
 								}
 							}
-							NotiReceiver.notificationManager.cancel(eid.get(posOfNoti));
+							Log.d("data", name.get(posOfNoti));
+							event.delete(name.get(posOfNoti));
+							event.close();
 
 							Toast.makeText(getApplicationContext(),
 									"Data Deleted Successfully",
 									Toast.LENGTH_LONG).show();
 
-							// SQLView.this.onCreate(savedInstanceState);
+							for (int i = 0; i < name.size(); i++) {
+								if (name.get(i).toUpperCase()
+										.equals(ename.get(pos))) {
+									posOfNoti = i;
 
+									break;
+								}
+							}
+
+							// SQLView.this.onCreate(savedInstanceState);
+							cancelAlarm(posOfNoti);
 							Intent i = new Intent(getBaseContext(),
 									MainActivity.class);
 
@@ -426,8 +441,12 @@ public class MainActivity extends Activity {
 
 			LoadData objects1 = new LoadData();
 			// http://10.0.2.2:8080
-			objects1.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page="
-					+ (pageNo++) + "&ipp=5");
+			length = 0;
+			objects1.execute("http://10.0.2.2/NITTEvents/api/all.php?token=60ae136e5d49fbdf037fab5f1d805634&page=0&ipp=5");
+
+			// objects1.execute("http://www.pragyan.org/festember/events/api/all.php?token=94a08da1fecbb6e8b46990538c7b50b2&page="
+			// + (pageNo++) + "&ipp=5");
+
 			break;
 
 		}
@@ -503,7 +522,7 @@ public class MainActivity extends Activity {
 			TextView item = (TextView) row1.findViewById(R.id.Name);
 			Log.e("name in adapter", name.get(position));
 			item.setText(name.get(position));
-			ImageView iconView = (ImageView)row1.findViewById(R.id.Pic);
+			ImageView iconView = (ImageView) row1.findViewById(R.id.Pic);
 			// iconView.setImageResource(R.drawable.common_signin_btn_icon_dark);
 
 			// View view = convertView;
@@ -521,11 +540,11 @@ public class MainActivity extends Activity {
 			// holder.text.setText(name.get(position));
 
 			System.out.println(pic.get(position));
-			if(position!=length){
-			imageLoader.init(config);
-			imageLoader.displayImage(pic.get(position), iconView, options);
+			if (position != length) {
+				imageLoader.init(config);
+				imageLoader.displayImage(pic.get(position), iconView, options);
 			}
-			if(position==length && more!=1)
+			if (position == length && more != 1)
 				iconView.setImageResource(R.drawable.add_new);
 
 			return row1;
@@ -637,7 +656,7 @@ public class MainActivity extends Activity {
 					date.add(i, edate);
 					time.add(i, etime);
 					desc.add(i, edesc);
-					ver.add(i,ever);
+					ver.add(i, ever);
 					venue.add(i, evenue);
 					eid.add(i, eeid);
 					uid.add(i, euid);
@@ -651,15 +670,61 @@ public class MainActivity extends Activity {
 					length = i;
 					name.add(i, "More");
 					pic.add(i, Integer.toString(R.drawable.logo));
-				}
-				else if(contacts.length()==0)
-				{
-					more=1;
-					length=i-1;
+				} else if (contacts.length() == 0 && more != 1) {
+					more = 1;
+					length = i - 1;
 				}
 				Log.e("length of event list", Integer.toString(length));
 			} catch (JSONException e) {
 				Log.e("JSON Parser", "Error parsing data " + e.toString());
+			}
+
+			listOfEvents = new ArrayList<HashMap<String, String>>();
+			event.open();
+			listOfEvents = event.getData();
+			Log.e("length of notifications",
+					Integer.toString(listOfEvents.size()));
+			event.close();
+
+			for (int i = 0; i < listOfEvents.size(); i++) {
+				edesc.add(i, listOfEvents.get(i).get("desc"));
+				ename.add(i, listOfEvents.get(i).get("name"));
+				etime.add(i, listOfEvents.get(i).get("time"));
+				edate.add(i, listOfEvents.get(i).get("date"));
+				evenue.add(i, listOfEvents.get(i).get("venue"));
+				ever.add(i, listOfEvents.get(i).get("ver"));
+				elat.add(i, listOfEvents.get(i).get("lat"));
+				elng.add(i, listOfEvents.get(i).get("lng"));
+				Log.e("ver", ever.get(i));
+				Log.e("time", etime.get(i));
+			}
+			for (int i = 0; i < listOfEvents.size(); i++) {
+				for (int j = 0; j < length + 1; j++) {
+//					Log.d("INside Loop", ename.get(i) + ";"
+//							+ name.get(j).toUpperCase() + ";" + ever.get(i)
+//							+ ";" + ver.get(j));
+					if (ename.get(i).equals(name.get(j).toUpperCase())
+							&& !ever.get(i)
+									.equals(Integer.toString(ver.get(j)))) {
+						event.open();
+						event.update(ename.get(i),
+								Integer.toString(ver.get(j)), time.get(j),
+								Double.toString(lat.get(j)),
+								Double.toString(lng.get(j)));
+						event.close();
+						if (!etime.get(i).equals(time.get(j))) {
+							cancelAlarm(j);
+							resetAlarm(j);
+						}
+						Log.e("Ver in loop", Integer.toString(ver.get(j)));
+						ever.add(i, Integer.toString(ver.get(j)));
+						elat.add(i, Double.toString(lat.get(j)));
+						elng.add(i, Double.toString(lng.get(j)));
+						etime.add(i, time.get(j));
+
+					}
+				}
+
 			}
 
 			ArrayAdapter<String> adapter = new MyCustomAdapter(
@@ -673,5 +738,81 @@ public class MainActivity extends Activity {
 
 		}
 
+	}
+
+	public void resetAlarm(int j) {
+		// TODO Auto-generated method stub
+		Intent intent = new Intent(MainActivity.this, NotiReceiver.class);
+		intent.putExtra("name", name.get(j));
+		intent.putExtra("venue", venue.get(j));
+		intent.putExtra("lat", lat.get(j));
+		intent.putExtra("lng", lng.get(j));
+		// intent.putExtra("pic", ePic);
+		intent.putExtra("eid", eid.get(j));
+		int hr = Integer.parseInt(time.get(j).substring(0, 2));
+		int min = Integer.parseInt(time.get(j).substring(3, 5));
+		int dates = Integer.parseInt(date.get(j).substring(8));
+		int month = Integer.parseInt(date.get(j).substring(5, 7));
+		int year = Integer.parseInt(date.get(j).substring(0, 4));
+
+		AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(
+				MainActivity.this, eid.get(j), intent,
+				Intent.FLAG_ACTIVITY_NEW_TASK);
+
+		Log.e("hour", Integer.toString(hr - 1));
+		Log.e("min", Integer.toString(min));
+		Log.e("date", Integer.toString(dates));
+		Log.e("month", Integer.toString(month));
+		Log.e("year", Integer.toString(year));
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.DAY_OF_MONTH, dates);
+		calendar.set(Calendar.MONTH, month - 1);
+		calendar.set(Calendar.YEAR, year);
+		// calendar.set(Calendar.HOUR_OF_DAY, 11);
+		calendar.set(Calendar.HOUR_OF_DAY, hr - 1);
+		calendar.set(Calendar.MINUTE, min);
+
+		alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(),
+				pendingIntent);
+		Log.d("in reset", "reset");
+
+	}
+
+	public void cancelAlarm(int j) {
+		// TODO Auto-generated method stub
+		Intent intent = new Intent(MainActivity.this, NotiReceiver.class);
+		intent.putExtra("name", name.get(j));
+		intent.putExtra("venue", venue.get(j));
+		intent.putExtra("lat", lat.get(j));
+		intent.putExtra("lng", lng.get(j));
+		// intent.putExtra("pic", ePic);
+		intent.putExtra("eid", eid.get(j));
+		int hr = Integer.parseInt(time.get(j).substring(0, 2));
+		int min = Integer.parseInt(time.get(j).substring(3, 5));
+		int dates = Integer.parseInt(date.get(j).substring(8));
+		int month = Integer.parseInt(date.get(j).substring(5, 7));
+		int year = Integer.parseInt(date.get(j).substring(0, 4));
+
+		AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+		PendingIntent pendingIntent = PendingIntent.getBroadcast(
+				MainActivity.this, eid.get(j), intent,
+				Intent.FLAG_ACTIVITY_NEW_TASK);
+
+		Log.e("hour", Integer.toString(hr - 1));
+		Log.e("min", Integer.toString(min));
+		Log.e("date", Integer.toString(dates));
+		Log.e("month", Integer.toString(month));
+		Log.e("year", Integer.toString(year));
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(Calendar.DAY_OF_MONTH, dates);
+		calendar.set(Calendar.MONTH, month - 1);
+		calendar.set(Calendar.YEAR, year);
+		// calendar.set(Calendar.HOUR_OF_DAY, 11);
+		calendar.set(Calendar.HOUR_OF_DAY, hr - 1);
+		calendar.set(Calendar.MINUTE, min);
+
+		alarmManager.cancel(pendingIntent);
+		Log.d("in cancel alarm", "cancelled");
 	}
 }

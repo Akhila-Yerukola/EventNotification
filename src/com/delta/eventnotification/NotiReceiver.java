@@ -19,7 +19,7 @@ public class NotiReceiver extends BroadcastReceiver {
 	Integer pic;
 	List<HashMap<String, String>> events;
 	String eName, eTime, eDate, eLoc, eDesc;
-	static NotificationManager notificationManager;
+	NotificationManager notificationManager;
 
 	@Override
 	public void onReceive(Context context, Intent event) {

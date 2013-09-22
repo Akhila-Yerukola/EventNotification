@@ -34,6 +34,7 @@ public class Map extends android.support.v4.app.FragmentActivity {
 	Geocoder geocoder;
 	String bestProvider;
 	List<Address> user = null;
+	String rlat, rlng;
 	double lat;
 	double lng,latOfDest,lngOfDest;
 
@@ -43,8 +44,10 @@ public class Map extends android.support.v4.app.FragmentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.map);
 		Intent getDetails =getIntent();
-		latOfDest=getDetails.getDoubleExtra("lat", 0);
-		lngOfDest=getDetails.getDoubleExtra("lng", 0);
+		rlat=getDetails.getStringExtra("lat");
+		rlng=getDetails.getStringExtra("lng");
+		latOfDest=Double.parseDouble(rlat);
+		lngOfDest=Double.parseDouble(rlng);
 		
 		android.support.v4.app.FragmentManager myFragmentManager = getSupportFragmentManager();
 		SupportMapFragment mySupportMapFragment = (SupportMapFragment) myFragmentManager

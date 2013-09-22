@@ -18,6 +18,9 @@ public class EventDb {
 	public static final String KEY_TIME = "_time";
 	public static final String KEY_DESC = "_desc";
 	public static final String KEY_VENUE = "_venue";
+	public static final String KEY_LAT = "_lat";
+	public static final String KEY_LNG = "_lng";
+	public static final String KEY_VER = "_ver";
 	// public static final String KEY_CHEMAIL = "_chemail";
 	public static final String KEY_PIC = "_pic";
 
@@ -41,7 +44,7 @@ public class EventDb {
 			// TODO Auto-generated method stub
 			db.execSQL("CREATE TABLE " + DATABASE_TABLE + "(" + KEY_NAME
 					+ " TEXT NOT NULL, " + KEY_DATE + " TEXT, " + KEY_TIME
-					+ " TEXT, " + KEY_VENUE + " TEXT, " + KEY_DESC + " TEXT);");
+					+ " TEXT, " + KEY_VENUE + " TEXT, " + KEY_VER + " TEXT, "+ KEY_LAT + " TEXT, "+ KEY_LNG + " TEXT, " + KEY_DESC + " TEXT);");
 			// db.execSQL("create table MyEvents(_event text not null, _date text, _time text, _priority varchar(10));");
 
 		}
@@ -71,7 +74,7 @@ public class EventDb {
 	}
 
 	public long createEntry(String name, String date, String time, String desc,
-			String venue) {
+			String venue, String ver, String lat, String lng) {
 		// TODO Auto-generated method stub
 
 		ContentValues cv = new ContentValues();
@@ -80,6 +83,9 @@ public class EventDb {
 		cv.put(KEY_TIME, time);
 		cv.put(KEY_DESC, desc);
 		cv.put(KEY_VENUE, venue);
+		cv.put(KEY_VER, ver);
+		cv.put(KEY_LAT, lat);
+		cv.put(KEY_LNG, lng);
 		//cv.put(KEY_PIC, pic);
 		// cv.put(KEY_CHEMAIL, chemail);
 		// cv.put(KEY_CHSMS, chsms);
@@ -92,7 +98,7 @@ public class EventDb {
 		// TODO Auto-generated method stub
 		List docList = new ArrayList();
 		String[] columns = new String[] { KEY_NAME, KEY_DATE, KEY_TIME,
-				KEY_VENUE, KEY_DESC };
+				KEY_VENUE, KEY_DESC,KEY_VER,KEY_LAT,KEY_LNG };
 		// KEY_EMAIL, KEY_PHNO, KEY_CHCALL, KEY_CHEMAIL, KEY_CHSMS};
 		Cursor c = ourDatabase.query(DATABASE_TABLE, columns, null, null, null,
 				null, null);
@@ -103,7 +109,9 @@ public class EventDb {
 		int iTime = c.getColumnIndex(KEY_TIME);
 		int iDesc = c.getColumnIndex(KEY_DESC);
 		int iVenue = c.getColumnIndex(KEY_VENUE);
-		//int iPic = c.getColumnIndex(KEY_PIC);
+		int iVer = c.getColumnIndex(KEY_VER);
+		int iLat = c.getColumnIndex(KEY_LAT);
+		int iLng = c.getColumnIndex(KEY_LNG);
 
 		for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 			// result = result + c.getString(iEvent) + " " + c.getString(iDate)
@@ -114,7 +122,9 @@ public class EventDb {
 			temp.put("time", c.getString(iTime));
 			temp.put("desc", c.getString(iDesc));
 			temp.put("venue", c.getString(iVenue));
-			//temp.put("pic", c.getInt(iPic));
+			temp.put("ver", c.getString(iVer));
+			temp.put("lat", c.getString(iLng));
+			temp.put("lng", c.getString(iLat));
 
 			docList.add(temp);
 
@@ -135,5 +145,17 @@ public class EventDb {
 				KEY_VENUE };
 		Cursor m = ourDatabase.query(DATABASE_TABLE, columns, "_name='" + eventName + "'", null, null, null, null);
 		return m;
+	}
+
+	public void update(String name, String ver, String time,
+			String lat, String lng) {
+		// TODO Auto-generated method stub
+		ContentValues cv = new ContentValues();
+		cv.put(KEY_VER, ver);
+		cv.put(KEY_TIME, time);
+		cv.put(KEY_LAT, lat);
+		cv.put(KEY_LNG,lng);
+		ourDatabase.update(DATABASE_TABLE, cv, "_name='" + name + "'", null);
+		
 	}
 }

@@ -29,12 +29,12 @@ public class Notification extends Activity implements OnClickListener,
 	TextView name, venue, dateNtime;
 	Button save, cancel;
 	EventDb data;
-	String eName, eTime, eDate, eLoc, eDesc, timeToBeSet;
+	String eName, eTime, eDate, eLoc, eDesc, timeToBeSet,status;
 	Integer ePic;
 	String[] choices = { "1 hour before", "2 hours before" };
 	Spinner spinner;
 	List events = new ArrayList();
-	int length, hr, min, date, month, year,eid,pos;
+	int length, hr, min, date, month, year,eid,pos,ver;
 	Double lat, lng;
 	static int c = 0;
 	DisplayImageOptions options;
@@ -72,7 +72,10 @@ public class Notification extends Activity implements OnClickListener,
 		lat = event.getDoubleExtra("lat", 0);
 		lng = event.getDoubleExtra("lng", 0);
 		eid=event.getIntExtra("eid", 0);
-		pos=event.getIntExtra("pos", 0);
+		ver=event.getIntExtra("ver", 0);
+		status = event.getStringExtra("status");
+		Log.d("status", status);
+		//pos=event.getIntExtra("pos", 0);
 		// pic=event.getIntExtra("pic", 0);
 		ePic = event.getIntExtra("pic", R.drawable.ic_launcher);
 		// data.open();
@@ -110,7 +113,7 @@ public class Notification extends Activity implements OnClickListener,
 			boolean work = true;
 			try {
 				data.open();
-				data.createEntry(eName, eDate, eTime, eDesc, eLoc);
+				data.createEntry(eName, eDate, eTime, eDesc, eLoc,Integer.toString(ver),Double.toString(lat),Double.toString(lng));
 				data.close();
 			} catch (Exception e) {
 				work = false;
@@ -132,7 +135,7 @@ public class Notification extends Activity implements OnClickListener,
 				intent.putExtra("lng", lng);
 				intent.putExtra("pic", ePic);
 				intent.putExtra("eid", eid);
-				MainActivity.flagForEvent.add(pos);
+				//MainActivity.flagForEvent.add(pos);
 
 				AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
 				PendingIntent pendingIntent = PendingIntent.getBroadcast(
@@ -153,9 +156,17 @@ public class Notification extends Activity implements OnClickListener,
 				calendar.set(Calendar.HOUR_OF_DAY,
 						hr - Integer.parseInt(timeToBeSet));
 				calendar.set(Calendar.MINUTE, min);
+				if(status.equals("set")){
 				alarmManager.set(AlarmManager.RTC_WAKEUP,
 						calendar.getTimeInMillis(), pendingIntent);
+				
 				Toast.makeText(this, "Event Added!", Toast.LENGTH_SHORT).show();
+				}
+				if(status.equals("cancel"))
+				{
+					alarmManager.cancel(pendingIntent);
+					Log.d("Status", "Cancelled");
+				}
 			}
 
 			// Should add notification alarm setter here!
